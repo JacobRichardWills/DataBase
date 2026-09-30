@@ -27,6 +27,8 @@ const ACTS = [
   { id: 'note', label: 'Note', title: 'Note', icon: 'note' },
 ];
 const ACT = Object.fromEntries(ACTS.map(a => [a.id, a]));
+// Entries the app writes on its own (not offered in the Log contact picker).
+const AUTO_ACTS = { followup: { title: 'Follow-up', icon: 'calendar' }, task: { title: 'Task', icon: 'task' }, stage: { title: 'Progress', icon: 'flag' } };
 const OUTREACH = new Set(['text', 'call', 'email', 'in_person']);
 const NOTE_COLORS = ['yellow', 'mint', 'sky', 'rose'];
 
@@ -111,7 +113,10 @@ let lastPull = LS.get('lb2.lastPull', '');
 if (!draft) draft = base ? structuredClone(base) : emptyDb();
 normalize(draft);
 
-let ui = { filter: 'active', q: '', showDone: false, histFilter: 'all' };
+let undo = LS.get('lb2.undo', []);            // [{key, text, before, pendingBefore}] newest last
+let snap = structuredClone(draft);             // draft as of the last recorded change
+let changeSeq = 0;
+let ui = { filter: 'active', q: '', showDone: false, histFilter: 'all', notesOpen: {} };
 
 function normalize(d) {
   d.clients ||= []; d.tasks ||= []; d.wins ||= [];
@@ -124,7 +129,7 @@ function normalize(d) {
 let persistTimer;
 function persist(now = false) {
   clearTimeout(persistTimer);
-  const go = () => { LS.set('lb2.draft', draft); LS.set('lb2.pending', pending); };
+  const go = () => { LS.set('lb2.draft', draft); LS.set('lb2.pending', pending); LS.set('lb2.undo', undo); };
   if (now) go(); else persistTimer = setTimeout(go, 250);
 }
 function saveCfg() { LS.set('lb.cfg', cfg); }
@@ -223,7 +228,18 @@ setInterval(applyTheme, 60 * 1000);
 /* ================= Changes (draft) ================= */
 
 // Record a change for the save bar. Same key = same change (typing in a field counts once).
-function change(key, text, { rerender = true } = {}) {
+function change(key, text, { rerender = true, typing = false } = {}) {
+  stampFields(snap, draft);
+  const top = undo[undo.length - 1];
+  if (typing && top && top.key === key) top.text = text; // one undo step per field while typing
+  else {
+    if (top) delete top.after; // the new step's "before" already holds it
+    undo.push({ key, text, before: snap, pendingBefore: structuredClone(pending) });
+    if (undo.length > 12) undo.shift();
+  }
+  snap = structuredClone(draft);
+  undo[undo.length - 1].after = snap;
+  changeSeq++;
   const i = pending.findIndex(p => p.key === key);
   const entry = { key, text, at: nowIso() };
   if (i >= 0) pending[i] = entry; else pending.push(entry);
@@ -232,6 +248,40 @@ function change(key, text, { rerender = true } = {}) {
   if (rerender) render();
 }
 const touch = x => { x.updatedAt = nowIso(); return x; };
+
+// Stamp each field that changed, so two devices editing different fields of
+// the same client both keep their edits when merged.
+function stampFields(prev, cur) {
+  const t = nowIso();
+  for (const k of ['clients', 'tasks', 'wins']) {
+    const pm = new Map((prev[k] || []).map(x => [x.id, x]));
+    for (const x of cur[k] || []) {
+      const p = pm.get(x.id);
+      if (!p) continue;
+      for (const f of new Set([...Object.keys(p), ...Object.keys(x)])) {
+        if (f === 'activities' || f === '_t' || f === 'updatedAt') continue;
+        if (canon(p[f]) !== canon(x[f])) { x._t = { ...(x._t || {}), [f]: t }; x.updatedAt = t; }
+      }
+    }
+  }
+}
+
+// For toast "Undo" buttons: only undo if nothing else has changed since.
+const undoIfTop = key => () => { if (undo[undo.length - 1]?.key === key) undoLast(); else undoSheet(); };
+
+function undoLast() {
+  const top = undo.pop();
+  if (!top) return;
+  // Take back just this step; anything that arrived from other devices since stays.
+  draft = normalize(top.after ? mergeDb(top.before, draft, top.after) : structuredClone(top.before));
+  pending = top.pendingBefore || [];
+  snap = structuredClone(draft);
+  if (undo.length) undo[undo.length - 1].after = snap;
+  persist(true);
+  updateSaveBar();
+  render();
+  toast(`Undone: ${top.text}`);
+}
 
 function updateSaveBar() {
   const n = pending.length;
@@ -247,10 +297,12 @@ function updateSaveBar() {
 function discardAll() {
   draft = normalize(base ? structuredClone(base) : emptyDb());
   pending = [];
+  undo = [];
+  snap = structuredClone(draft);
   persist(true);
   updateSaveBar();
   render();
-  toast('Changes discarded');
+  toast('All unsaved changes undone');
 }
 
 /* ================= GitHub ================= */
@@ -321,37 +373,68 @@ async function fetchRemote() {
   return { data: normalize(await r.json()), sha: null };
 }
 
-function mergeList(a = [], b = [], withActs = false) {
-  const map = new Map();
-  for (const x of b) map.set(x.id, x);
-  for (const x of a) {
-    const o = map.get(x.id);
-    if (!o) { map.set(x.id, x); continue; }
-    const win = (x.updatedAt || '') >= (o.updatedAt || '') ? x : o;
-    if (!withActs) { map.set(x.id, win); continue; }
-    const lose = win === x ? o : x;
-    const am = new Map();
-    for (const y of lose.activities || []) am.set(y.id, y);
-    for (const y of win.activities || []) { const z = am.get(y.id); if (!z || (y.updatedAt || '') >= (z.updatedAt || '')) am.set(y.id, y); }
-    map.set(x.id, { ...win, activities: [...am.values()] });
+// Field by field. With the last-synced copy (anc) we know which side actually
+// changed each field: take that side. Only if both changed it, the newer edit wins.
+function mergeItem(x, o, anc) {
+  const out = {}, t = {};
+  const same = (p, q, k) => canon(p?.[k]) === canon(q?.[k]);
+  for (const k of new Set([...Object.keys(x), ...Object.keys(o)])) {
+    if (k === '_t' || k === 'activities' || k === 'updatedAt') continue;
+    let src;
+    if (anc && same(x, anc, k)) src = o;          // only the other side changed it (or nobody did)
+    else if (anc && same(o, anc, k)) src = x;     // only this side changed it
+    else {
+      const tx = x._t?.[k] || x.updatedAt || '', to = o._t?.[k] || o.updatedAt || '';
+      src = tx >= to ? x : o;
+    }
+    if (!(k in src)) src = src === x ? o : x;
+    out[k] = src[k];
+    const ex = x._t?.[k] || '', eo = o._t?.[k] || '';
+    if (ex || eo) t[k] = ex >= eo ? ex : eo;
   }
-  return [...map.values()].sort((p, q) => (p.createdAt || '').localeCompare(q.createdAt || ''));
+  out.updatedAt = (x.updatedAt || '') >= (o.updatedAt || '') ? x.updatedAt : o.updatedAt;
+  if (Object.keys(t).length) out._t = t;
+  return out;
 }
-// a = local draft, b = copy from the repo. Newer edits win per item.
-function mergeDb(a, b) {
+
+// Three-way when anc is given: an item missing on one side that the other side
+// hasn't touched since anc was removed on purpose, so it stays removed.
+function mergeList(a = [], b = [], withActs = false, anc = null) {
+  const am = new Map(a.map(x => [x.id, x])), bm = new Map(b.map(x => [x.id, x])), cm = new Map((anc || []).map(x => [x.id, x]));
+  const out = [];
+  for (const id of new Set([...am.keys(), ...bm.keys()])) {
+    const x = am.get(id), o = bm.get(id), c = cm.get(id);
+    if (x && o) {
+      const m = mergeItem(x, o, c);
+      if (withActs) m.activities = mergeList(x.activities || [], o.activities || [], false, anc ? (c?.activities || []) : null);
+      out.push(m);
+    } else {
+      const only = x || o;
+      if (c && canon(only) === canon(c)) continue;
+      out.push(only);
+    }
+  }
+  return out.sort((p, q) => (p.createdAt || '').localeCompare(q.createdAt || ''));
+}
+
+// a = local draft, b = copy from the repo, anc = the repo copy this device last saw.
+function mergeDb(a, b, anc = null) {
   a = normalize(structuredClone(a)); b = normalize(structuredClone(b));
+  const an = anc ? normalize(structuredClone(anc)) : emptyDb();
   return {
     version: 2,
-    clients: mergeList(a.clients, b.clients, true),
-    tasks: mergeList(a.tasks, b.tasks),
-    wins: mergeList(a.wins, b.wins),
+    clients: mergeList(a.clients, b.clients, true, anc ? an.clients : null),
+    tasks: mergeList(a.tasks, b.tasks, false, anc ? an.tasks : null),
+    wins: mergeList(a.wins, b.wins, false, anc ? an.wins : null),
     goals: (a.goals.updatedAt || '') >= (b.goals.updatedAt || '') ? a.goals : b.goals,
   };
 }
 
 let pulling = false;
-async function pull({ quiet = true } = {}) {
+async function pull({ quiet = true, force = false } = {}) {
   if (pulling || saving) return;
+  // Never swap data out from under an open form or a field being typed in.
+  if (!force && (dialogOpen() || editingInline())) return;
   if (!navigator.onLine) { pill(); return; }
   pulling = true;
   try {
@@ -362,12 +445,14 @@ async function pull({ quiet = true } = {}) {
     if (sha) { remoteSha = sha; LS.set('lb2.sha', sha); }
     const changed = !base || canon(data) !== canon(base);
     if (changed) {
+      draft = pending.length ? mergeDb(draft, data, base) : structuredClone(data);
       base = data; LS.set('lb2.base', base);
-      draft = pending.length ? mergeDb(draft, data) : structuredClone(data);
       normalize(draft);
+      snap = structuredClone(draft);
       persist(true);
-      if (!dialogOpen() && !editingInline()) render();
+      history.cache = null; history.error = '';           // new saves elsewhere → refresh History too
     }
+    if ((changed || force) && !dialogOpen() && !editingInline()) render();
   } catch (e) {
     console.error(e);
     pull.error = e.message || 'Couldn’t load the latest data.';
@@ -384,6 +469,7 @@ async function save() {
   if (!hasToken()) { tokenSheet(); return; }
   if (!navigator.onLine) { toast('You’re offline. Your changes are safe on this device — save when you’re back online.'); return; }
   saving = true;
+  const startedAt = nowIso(), seq0 = changeSeq, draftAtStart = structuredClone(draft);
   pill('busy', 'Saving');
   $('.save-btn').disabled = true;
   try {
@@ -394,7 +480,7 @@ async function save() {
       let remote = null, sha = null;
       if (r.ok) { const j = await r.json(); sha = j.sha; remote = normalize(JSON.parse(j.content ? b64dec(j.content) : '{}')); }
       else if (r.status !== 404) throw new GhError(r.status, explain(r.status));
-      const merged = remote ? mergeDb(draft, remote) : mergeDb(draft, emptyDb());
+      const merged = remote ? mergeDb(draft, remote, base) : mergeDb(draft, emptyDb());
       prune(merged);
       const title = lines.length === 1 ? lines[0] : `${lines.length} updates: ${lines.slice(0, 2).join('; ')}${lines.length > 2 ? '…' : ''}`;
       const message = `${title.slice(0, 90)}\n\n${lines.map(l => '- ' + l).join('\n')}\n\nSaved from Lead Book app (${cfg.device || 'browser'})`;
@@ -406,15 +492,21 @@ async function save() {
       if (!put.ok) throw new GhError(put.status, explain(put.status));
       const j = await put.json();
       remoteSha = j.content?.sha || null; LS.set('lb2.sha', remoteSha);
-      base = merged; draft = structuredClone(merged); pending = [];
-      LS.set('lb2.base', base); persist(true);
+      base = merged; LS.set('lb2.base', base);
+      if (changeSeq === seq0) { draft = structuredClone(merged); pending = []; }
+      else { draft = mergeDb(draft, merged, draftAtStart); pending = pending.filter(p => p.at > startedAt); } // edits made mid-save stay unsaved
+      normalize(draft);
+      undo = []; snap = structuredClone(draft);
+      lastPull = nowIso(); LS.set('lb2.lastPull', lastPull);
+      persist(true);
       done = true;
     }
     if (!done) throw new Error('The file kept changing while saving. Try again.');
-    history.cache = null;
+    history.cache = null; history.error = '';
     updateSaveBar();
     render();
     toast('Saved to GitHub');
+    setTimeout(() => { if (route().name === 'history') loadHistory(true); }, 1500);
   } catch (e) {
     console.error(e);
     save.error = e.message;
@@ -434,6 +526,23 @@ function prune(d) {
   for (const c of d.clients) c.activities = (c.activities || []).filter(a => !(a.deleted && (a.updatedAt || '') < cut));
 }
 
+function syncedLabel(iso) {
+  const d = new Date(iso);
+  return ymd(d) === today() ? d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' }) : d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+}
+
+// Sync button: fetch the latest data and history, then redraw everything.
+async function resync() {
+  if (!navigator.onLine) { toast('You’re offline — your changes are safe on this device.'); return; }
+  pill('busy', 'Syncing');
+  await pull({ quiet: true, force: true });
+  history.details = {};
+  await loadHistory(true);
+  render();
+  pill();
+  toast(pull.error || `Synced at ${syncedLabel(lastPull)}${pending.length ? ` · ${pending.length} unsaved on this device` : ''}`);
+}
+
 function pill(state, text) {
   const p = $('#syncPill');
   if (!state) {
@@ -441,8 +550,8 @@ function pill(state, text) {
     else if (!navigator.onLine) { state = 'offline'; text = 'Offline'; }
     else if (pending.length) { state = 'pending'; text = `${pending.length} unsaved`; }
     else if (pull.error) { state = 'error'; text = 'Can’t reach GitHub'; }
-    else if (!hasToken()) { state = 'off'; text = 'View only'; }
-    else { state = 'ok'; text = 'Up to date'; }
+    else if (!lastPull) { state = 'off'; text = 'Not synced yet'; }
+    else { state = hasToken() ? 'ok' : 'off'; text = `Synced ${syncedLabel(lastPull)}`; }
   }
   p.dataset.state = state;
   p.querySelector('.sync-text').textContent = text;
@@ -450,7 +559,7 @@ function pill(state, text) {
 
 window.addEventListener('online', () => pull());
 window.addEventListener('offline', () => pill());
-document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { applyTheme(); pull(); if (!dialogOpen()) render(); } });
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') persist(true); if (document.visibilityState === 'visible') { applyTheme(); pull(); if (!dialogOpen()) render(); } });
 setInterval(() => { if (document.visibilityState === 'visible') pull(); }, 90 * 1000);
 
 /* ================= Rendering ================= */
@@ -591,12 +700,14 @@ function clientItem(c, sub, due) {
   return `<li class="item">${cdot(c, 'sm')}
     <a class="item-main" href="#client/${c.id}"><div class="item-title">${esc(c.name)}</div>
     <div class="item-sub ${dueClass(due)}">${esc(sub)}${due ? ' · ' + esc(relDay(due)) : ''}</div></a>
-    ${c.phone ? `<a class="icon-btn sm" href="sms:${digits(c.phone)}" aria-label="Text ${esc(c.name)}">${icon('message')}</a>` : ''}
+    ${due && due <= today() ? `<button class="icon-btn sm" type="button" data-action="fu-done" data-id="${c.id}" aria-label="Mark follow-up with ${esc(c.name)} done">${icon('check')}</button>`
+      : c.phone ? `<a class="icon-btn sm" href="sms:${digits(c.phone)}" aria-label="Text ${esc(c.name)}">${icon('message')}</a>` : ''}
     <button class="icon-btn sm" type="button" data-action="log" data-id="${c.id}" aria-label="Log contact with ${esc(c.name)}">${icon('plus')}</button></li>`;
 }
 function taskItem(k) {
   const c = k.clientId ? byId(k.clientId) : null;
-  const sub = [k.due ? relDay(k.due) : '', c ? c.name : ''].filter(Boolean).join(' · ');
+  const when = k.done ? `Completed ${relWhen(k.doneAt).replace(/^(Today|Yesterday)$/, m => m.toLowerCase())}` : k.due ? relDay(k.due) : '';
+  const sub = [when, c ? c.name : ''].filter(Boolean).join(' · ');
   return `<li class="item${k.done ? ' done' : ''}">
     <button class="check" type="button" role="checkbox" aria-checked="${!!k.done}" data-action="toggle-task" data-id="${k.id}" aria-label="Mark done">${icon('check')}</button>
     <button class="item-main" type="button" data-action="edit-task" data-id="${k.id}"><div class="item-title">${esc(k.text)}</div>
@@ -698,8 +809,9 @@ function clientDetail(c) {
     </div>
 
     <div class="c-block">
+      <p class="c-block-title">Coming up <button class="btn sm" type="button" data-action="add-task" data-client="${c.id}">${icon('plus')}Task</button></p>
       <div class="fu">
-        <div><p class="c-block-title" style="margin-bottom:2px">Next follow-up</p>
+        <div><p class="c-block-title" style="margin-bottom:2px;font-weight:600">Next follow-up</p>
           <div class="fu-date ${dueClass(c.nextFollowUp)}">${c.nextFollowUp ? esc(fmtDay(c.nextFollowUp, { weekday: 'long', month: 'short', day: 'numeric' })) + (daysBetween(today(), c.nextFollowUp) < 0 ? ` · ${esc(relDay(c.nextFollowUp))}` : '') : 'None set'}</div>
           ${c.followUpNote ? `<div class="fu-note">${esc(c.followUpNote)}</div>` : ''}</div>
         <div style="display:flex;gap:6px">
@@ -707,6 +819,8 @@ function clientDetail(c) {
           <button class="btn sm" type="button" data-action="followup" data-id="${c.id}">${icon('calendar')}${c.nextFollowUp ? 'Change' : 'Set'}</button>
         </div>
       </div>
+      ${(() => { const ts = openTasks().filter(k => k.clientId === c.id).sort((a, b) => (a.due || '9999').localeCompare(b.due || '9999'));
+        return ts.length ? `<ul class="items client-tasks">${ts.map(taskItem).join('')}</ul>` : ''; })()}
     </div>
 
     <div class="c-block">
@@ -722,7 +836,7 @@ function clientDetail(c) {
     </div>
 
     <div class="c-block">
-      <details class="notes"${c.notes ? '' : ' open'}>
+      <details class="notes" data-id="${c.id}"${!c.notes || ui.notesOpen[c.id] ? ' open' : ''}>
         <summary>Notes<span class="preview">${esc((c.notes || '').split('\n')[0])}</span>${icon('chevD')}</summary>
         <textarea class="ed" data-edit="notes" data-id="${c.id}" placeholder="Anything worth remembering — the house, their timeline, who else is involved.">${esc(c.notes)}</textarea>
       </details>
@@ -745,13 +859,14 @@ function clientDetail(c) {
 
 function timelineItem(c, a) {
   const isStage = a.type === 'stage';
-  const ico = isStage ? 'flag' : ACT[a.type]?.icon || 'note';
-  const title = a.title || ACT[a.type]?.title || 'Activity';
+  const ico = (ACT[a.type] || AUTO_ACTS[a.type])?.icon || 'note';
+  const title = a.title || (ACT[a.type] || AUTO_ACTS[a.type])?.title || 'Activity';
   return `<li class="tl" data-t="${esc(a.type)}"${isStage && a.stage ? ` style="--c: var(--st${a.stage})"` : ''}>
     <span class="tl-icon">${icon(ico)}</span>
     <button class="tl-body" type="button" data-action="edit-act" data-id="${c.id}" data-act="${a.id}">
       <div class="tl-head"><span class="tl-title">${esc(title)}</span><span class="tl-when">${esc(relWhen(a.date))}</span></div>
       ${a.note ? `<div class="tl-note">${esc(a.note)}</div>` : ''}
+      ${a.next ? `<div class="tl-next">${icon('calendar')}Next follow-up ${esc(fmtDay(a.next, { weekday: 'short', month: 'short', day: 'numeric' }))}${a.nextNote ? ' · ' + esc(a.nextNote) : ''}</div>` : ''}
       ${a.by === 'claude' ? '<div class="tl-by">Added by Claude</div>' : ''}
     </button></li>`;
 }
@@ -851,6 +966,7 @@ async function loadCommitFiles(sha) {
 document.addEventListener('toggle', e => {
   const d = e.target;
   if (d.classList?.contains('ev') && d.open) loadCommitFiles(d.dataset.sha);
+  if (d.classList?.contains('notes')) ui.notesOpen[d.dataset.id] = d.open; // stay open across redraws
 }, true);
 
 /* ---------- Settings ---------- */
@@ -1063,6 +1179,32 @@ function clientSheet() {
   });
 }
 
+function addEntry(c, e) {
+  const entry = { id: uid(), date: today(), note: '', createdAt: nowIso(), updatedAt: nowIso(), ...e };
+  c.activities.push(entry);
+  touch(c);
+  return entry;
+}
+function completeFollowup(c) {
+  const note = c.followUpNote;
+  addEntry(c, { type: 'followup', title: 'Follow-up done', note: note || '' });
+  c.nextFollowUp = ''; c.followUpNote = '';
+  touch(c);
+  change('c:fu:' + c.id, `Completed follow-up for ${c.name}${note ? ` (${note})` : ''}`);
+  toast('Follow-up done', { label: 'Log details', run: () => { const x = byId(c.id); if (x) actSheet(x); } });
+}
+function toggleTask(t) {
+  t.done = !t.done;
+  t.doneAt = t.done ? nowIso() : '';
+  touch(t);
+  const c = t.clientId ? byId(t.clientId) : null;
+  if (c) {
+    if (t.done) t.doneActId = addEntry(c, { type: 'task', title: `Completed: ${t.text}` }).id;
+    else { const a = c.activities.find(x => x.id === t.doneActId); if (a) { a.deleted = true; touch(a); touch(c); } t.doneActId = ''; }
+  }
+  change('t:done:' + t.id, `${t.done ? 'Completed' : 'Reopened'} task “${t.text}”`);
+}
+
 function reactivate(c) {
   c.archived = false; c.archivedAt = ''; touch(c);
   change('c:arch:' + c.id, `Reactivated ${c.name}`);
@@ -1075,7 +1217,7 @@ function actSheet(c, a) {
   const cur = a || { type: 'text', date: today(), title: '', note: '' };
   const body = `<div class="form">
     <p class="muted" style="margin:0">${esc(c.name)}${c.phone ? ' · ' + esc(c.phone) : ''}</p>
-    ${cur.type === 'stage' ? '' : `<div class="field"><span>Type</span><div class="seg" role="radiogroup" aria-label="Type">
+    ${AUTO_ACTS[cur.type] ? '' : `<div class="field"><span>Type</span><div class="seg" role="radiogroup" aria-label="Type">
       ${ACTS.map(x => `<label><input type="radio" name="type" value="${x.id}"${x.id === cur.type ? ' checked' : ''}><span>${icon(x.icon)}${x.label}</span></label>`).join('')}
     </div></div>`}
     <div class="two">
@@ -1089,15 +1231,17 @@ function actSheet(c, a) {
   const extra = isEdit ? `<button type="button" class="btn sm danger" data-del>${icon('trash')}Remove</button>` : '';
   openSheet(shell(isEdit ? 'Edit entry' : 'Log contact', body, isEdit ? 'Save' : 'Add to history', extra), fd => {
     const type = fd.get('type') || cur.type;
-    const title = fd.get('title').trim() || ACT[type]?.title || 'Activity';
+    const title = fd.get('title').trim() || (ACT[type] || AUTO_ACTS[type])?.title || 'Activity';
     if (isEdit) {
       Object.assign(a, { type, title, date: fd.get('date') || a.date, note: fd.get('note').trim() }); touch(a); touch(c);
       change('a:' + a.id, `Edited “${title}” for ${c.name}`);
     } else {
       const entry = { id: uid(), type, title, date: fd.get('date') || today(), note: fd.get('note').trim(), createdAt: nowIso(), updatedAt: nowIso() };
       c.activities.push(entry);
+      const prevFu = c.nextFollowUp;
       c.nextFollowUp = readFu(fd, c.nextFollowUp);
       c.followUpNote = c.nextFollowUp ? fd.get('fuNote').trim() : '';
+      if (c.nextFollowUp && c.nextFollowUp !== prevFu) { entry.next = c.nextFollowUp; entry.nextNote = c.followUpNote; }
       touch(c);
       change('a:' + entry.id, `Logged ${title.toLowerCase()} with ${c.name}`);
       toast('Added to history');
@@ -1107,7 +1251,7 @@ function actSheet(c, a) {
     const titleEl = d.querySelector('[name=title]');
     let userTitle = isEdit;
     titleEl.addEventListener('input', () => { userTitle = true; });
-    d.querySelectorAll('[name=type]').forEach(r => r.addEventListener('change', () => { if (!userTitle) titleEl.value = ACT[r.value].title; }));
+    d.querySelectorAll('[name=type]').forEach(r => r.addEventListener('change', () => { if (!userTitle && ACT[r.value]) titleEl.value = ACT[r.value].title; }));
     const del = d.querySelector('[data-del]');
     if (del) del.addEventListener('click', () => {
       a.deleted = true; touch(a); touch(c);
@@ -1120,16 +1264,20 @@ function actSheet(c, a) {
 function followupSheet(c) {
   openSheet(shell('Next follow-up', `<div class="form"><p class="muted" style="margin:0">${esc(c.name)}</p>${fuChoices(c.nextFollowUp)}
     <label class="field"><span>Reminder</span><input name="fuNote" value="${esc(c.followUpNote)}" placeholder="e.g. Call about the inspection report"></label></div>`, 'Save'), fd => {
+    const prev = c.nextFollowUp, prevNote = c.followUpNote;
     c.nextFollowUp = readFu(fd, c.nextFollowUp);
     c.followUpNote = c.nextFollowUp ? fd.get('fuNote').trim() : '';
-    touch(c);
+    if (c.nextFollowUp === prev && c.followUpNote === prevNote) return;
+    addEntry(c, c.nextFollowUp
+      ? { type: 'followup', title: `Follow-up set for ${fmtDay(c.nextFollowUp, { weekday: 'short', month: 'short', day: 'numeric' })}`, note: c.followUpNote }
+      : { type: 'followup', title: 'Follow-up cleared', note: prevNote || '' });
     change('c:fu:' + c.id, c.nextFollowUp ? `Set follow-up for ${c.name} to ${fmtDay(c.nextFollowUp)}` : `Cleared follow-up for ${c.name}`);
   });
 }
 
 /* ----- Tasks, notes, wins ----- */
-function taskSheet(k) {
-  const cur = k || { text: '', due: '', clientId: '' };
+function taskSheet(k, clientId = '') {
+  const cur = k || { text: '', due: '', clientId };
   const body = `<div class="form">
     <label class="field"><span>Task</span><input name="text" value="${esc(cur.text)}" required autofocus placeholder="e.g. Drop off business cards at Summit Peak"></label>
     <div class="two">
@@ -1145,6 +1293,8 @@ function taskSheet(k) {
     else {
       const t = { id: uid(), kind: 'task', text, due: fd.get('due'), clientId: fd.get('clientId'), done: false, createdAt: nowIso(), updatedAt: nowIso() };
       draft.tasks.push(t);
+      const c = t.clientId ? byId(t.clientId) : null;
+      if (c) addEntry(c, { type: 'task', title: `Task added: ${text}`, note: t.due ? `Due ${fmtDay(t.due, { weekday: 'short', month: 'short', day: 'numeric' })}` : '' });
       change('t:' + t.id, `Added task “${text}”`);
     }
   }, d => {
@@ -1212,9 +1362,24 @@ function goalsSheet() {
 function reviewSheet() {
   const body = `<ul style="margin:0;padding-left:18px">${pending.map(p => `<li style="margin-bottom:4px">${esc(p.text)} <span class="muted" style="font-size:12.5px">· ${esc(timeAgo(p.at))}</span></li>`).join('')}</ul>
     <p class="hint">These are saved on this device. Save to put them in the repo, where your other devices and Claude can see them.</p>`;
-  openSheet(shell('Unsaved changes', body, 'Save changes', `<button type="button" class="btn sm danger" data-discard>Discard all</button>`), () => { save(); }, d => {
-    d.querySelector('[data-discard]').addEventListener('click', () => { if (confirm('Throw away all unsaved changes on this device?')) { d.close(); discardAll(); } });
+  openSheet(shell('Unsaved changes', body, 'Save changes', `<button type="button" class="btn sm" data-undo>Undo…</button>`), () => { save(); }, d => {
+    d.querySelector('[data-undo]').addEventListener('click', () => { d.close(); undoSheet(); });
   });
+}
+
+function undoSheet() {
+  const last = undo[undo.length - 1], n = pending.length;
+  if (!n) return;
+  const body = `<p style="margin:0 0 12px" class="muted">Undo can’t be redone.</p>
+    <div class="undo-opts">
+      ${last ? `<button type="button" class="undo-opt" data-u="last"><b>Undo last change</b><span>${esc(last.text)}</span></button>` : ''}
+      ${n > 1 || !last ? `<button type="button" class="undo-opt" data-u="all"><b>Undo all ${n} unsaved ${n === 1 ? 'change' : 'changes'}</b><span>Go back to the last saved version</span></button>` : ''}
+    </div>
+    <div class="btn-row" style="justify-content:flex-end"><button type="button" class="btn" data-close>Cancel</button></div>`;
+  openSheet(shell('Undo', body, null), () => {}, d => d.querySelectorAll('[data-u]').forEach(b => b.addEventListener('click', () => {
+    d.close();
+    if (b.dataset.u === 'last') undoLast(); else discardAll();
+  })));
 }
 
 function tokenSheet(msg = '') {
@@ -1294,18 +1459,14 @@ document.addEventListener('click', e => {
   const t = id ? draft.tasks.find(x => x.id === id) : null;
   switch (el.dataset.action) {
     case 'fab': route().name === 'clients' ? clientSheet() : addChooser(); break;
-    case 'pill':
-      if (pending.length) reviewSheet();
-      else if (pull.error) { toast(pull.error); pull({ quiet: false }); }
-      else if (!hasToken()) { location.hash = '#settings'; }
-      else { pull({ quiet: false }); toast('Checked for updates'); }
-      break;
+    case 'pill': resync(); break;
+    case 'undo': undoSheet(); break;
     case 'save': save(); break;
     case 'review': reviewSheet(); break;
-    case 'add-task': taskSheet(); break;
+    case 'add-task': taskSheet(null, el.dataset.client || ''); break;
     case 'edit-task': if (t) taskSheet(t); break;
     case 'toggle-task':
-      if (t) { t.done = !t.done; t.doneAt = t.done ? nowIso() : ''; touch(t); change('t:done:' + t.id, `${t.done ? 'Completed' : 'Reopened'} task “${t.text}”`); }
+      if (t) toggleTask(t);
       break;
     case 'toggle-done': ui.showDone = !ui.showDone; render(); break;
     case 'add-note': noteSheet(); break;
@@ -1317,24 +1478,23 @@ document.addEventListener('click', e => {
     case 'edit-act': { const a = c?.activities.find(x => x.id === el.dataset.act); if (a) actSheet(c, a); break; }
     case 'followup': if (c) followupSheet(c); break;
     case 'fu-done':
-      if (c) { c.nextFollowUp = ''; c.followUpNote = ''; touch(c); change('c:fu:' + c.id, `Marked follow-up done for ${c.name}`);
-        toast('Follow-up cleared', { label: 'Log it', run: () => actSheet(c) }); }
+      if (c) completeFollowup(c);
       break;
     case 'stage': if (c) toggleStage(c, Number(el.dataset.n)); break;
     case 'archive':
       if (c) { c.archived = true; c.archivedAt = nowIso(); touch(c); location.hash = '#clients'; change('c:arch:' + c.id, `Archived ${c.name}`);
-        toast(`Archived ${c.name}`, { label: 'Undo', run: () => { c.archived = false; touch(c); change('c:arch:' + c.id, `Un-archived ${c.name}`); } }); }
+        toast(`Archived ${c.name}`, { label: 'Undo', run: undoIfTop('c:arch:' + c.id) }); }
       break;
     case 'reactivate': if (c) reactivate(c); break;
     case 'delete':
       if (c && confirm(`Delete ${c.name} and their history? Archive keeps them instead.`)) {
         c.deleted = true; touch(c); location.hash = '#clients'; change('c:del:' + c.id, `Deleted client ${c.name}`);
-        toast(`Deleted ${c.name}`, { label: 'Undo', run: () => { c.deleted = false; touch(c); change('c:del:' + c.id, `Restored ${c.name}`); } });
+        toast(`Deleted ${c.name}`, { label: 'Undo', run: undoIfTop('c:del:' + c.id) });
       }
       break;
     case 'filter': ui.filter = el.dataset.f; render(); break;
     case 'hist-filter': ui.histFilter = el.dataset.f; render(); break;
-    case 'hist-refresh': history.details = {}; loadHistory(true); render(); break;
+    case 'hist-refresh': resync(); break;
     case 'forget-token': cfg.token = ''; saveCfg(); render(); pill(); toast('Token removed from this device'); break;
     case 'export-json': download(`lead-book-${today()}.json`, JSON.stringify(draft, null, 1), 'application/json'); break;
     case 'export-csv': download(`lead-book-clients-${today()}.csv`, toCsv(), 'text/csv'); break;
@@ -1377,7 +1537,7 @@ document.addEventListener('input', e => {
     if (f === 'name' && !el.value.trim()) return; // don't save an empty name
     c[f] = f === 'notes' ? el.value : el.value.trimStart();
     touch(c);
-    change(`c:${c.id}:${f}`, `Edited ${FIELD_LABELS[f]} for ${c.name}`, { rerender: false });
+    change(`c:${c.id}:${f}`, `Edited ${FIELD_LABELS[f]} for ${c.name}`, { rerender: false, typing: true });
     if (f === 'name' || f === 'business') { // keep the list beside the detail in step
       const row = document.querySelector(`.row.selected .row-${f === 'name' ? 'name' : 'biz'}`);
       if (row) row.textContent = c[f];

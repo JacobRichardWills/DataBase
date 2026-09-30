@@ -11,7 +11,9 @@ A client planner for an inspection business, modeled on the Area Book Planner.
 
 ## How saving works
 
-Edits save to your device the moment you make them, and a yellow **Save changes** bar appears. Tap it to commit everything to `data/leadbook.json` in this repo in one go, with a summary of what changed. Until then, your edits stay on the device even if you close the app. If two devices change different things, both are kept; if they change the same thing, the newer edit wins.
+Edits save to your device the moment you make them, and a yellow bar appears with **Undo** and **Save changes**. Save commits everything to `data/leadbook.json` in one go, with a summary of what changed. Undo asks whether to take back the last change or all unsaved changes. Until you save, your edits stay on the device even if you close the app.
+
+The sync button at the top ("Synced 5:42 PM") fetches the latest data and History from GitHub. The app also checks on its own every 90 seconds and whenever you come back to it. If two devices change different things — even different fields of the same client — both are kept; if they change the same field, the newer edit wins.
 
 Saving needs a GitHub token, pasted once per device (Settings → Saving to GitHub):
 github.com/settings/personal-access-tokens/new → Only select repositories → **DataBase** → Contents: **Read and write**.
@@ -28,7 +30,9 @@ Viewing works without a token.
 
 ## For Claude
 
-Data lives in `data/leadbook.json` (`clients`, `tasks` with `kind: task|note`, `wins`, `goals`). When adding entries, set `by: "claude"` on wins and activities, give every item an `id` and ISO `updatedAt`, and write a commit message whose first line says what changed (bullets below it show as details in History).
+Data lives in `data/leadbook.json` (`clients`, `tasks` with `kind: task|note`, `wins`, `goals`). When adding entries, set `by: "claude"` on wins and activities, give every item an `id` and ISO `createdAt`/`updatedAt`, and write a commit message whose first line says what changed (bullets below it show as details in History). When changing a field on an existing item, bump its `updatedAt` and set `_t.<field>` to the same time. Never delete items outright if a device might have unsaved edits — set `deleted: true` and bump `updatedAt`.
+
+Client history entry types: `text`, `call`, `email`, `in_person`, `service`, `quote`, `note` (logged by hand) and `followup`, `task`, `stage` (written by the app).
 
 ## Icons
 
