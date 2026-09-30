@@ -618,12 +618,12 @@
    "stages": {
     "1": "2026-09-26"
    },
-   "nextFollowUp": "2026-10-05",
-   "followUpNote": "Check if offer was accepted",
+   "nextFollowUp": "",
+   "followUpNote": "",
    "archived": false,
    "archivedAt": "",
    "createdAt": "2026-09-26T15:00:00.000Z",
-   "updatedAt": "2026-09-29T15:00:00.000Z",
+   "updatedAt": "2026-09-30T23:31:09.661Z",
    "example": true,
    "activities": [
     {
