@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Lead Book</title>
+<meta name="description" content="Contact planner for tracking inspection leads, follow-ups and weekly goals.">
+<meta name="theme-color" content="#16365E">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="icons/icon-192.png" type="image/png" sizes="192x192">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..125,500..800&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<script>
+  // Set theme before first paint so there's no flash.
+  (function () {
+    try {
+      var c = JSON.parse(localStorage.getItem('lb.cfg') || '{}');
+      var t = c.theme || 'auto';
+      if (t === 'auto') {
+        var h = new Date().getHours();
+        var from = c.lightFrom == null ? 7 : c.lightFrom, to = c.lightTo == null ? 19 : c.lightTo;
+        t = (h >= from && h < to) ? 'light' : 'dark';
+      }
+      document.documentElement.dataset.theme = t;
+    } catch (e) { document.documentElement.dataset.theme = 'light'; }
+  })();
+</script>
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <a class="brand" href="#today" aria-label="Lead Book home">
+        <img src="icons/favicon.svg" alt="" width="30" height="30">
+        <span class="brand-text">
+          <span class="brand-name">Lead Book</span>
+          <span class="brand-sub" id="brandSub"></span>
+        </span>
+      </a>
+      <button class="sync-pill" id="syncPill" type="button" data-action="sync-now" aria-live="polite">
+        <span class="dot"></span><span class="sync-text">Not synced</span>
+      </button>
+    </header>
+
+    <nav class="tabs" aria-label="Main">
+      <a href="#today" data-tab="today"><svg viewBox="0 0 24 24"><path d="M4 11 12 4l8 7M6 9.5V20h12V9.5"/><path d="m9.5 14 2 2 3.5-4"/></svg><span>Today</span></a>
+      <a href="#people" data-tab="people"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.6-3.6 3.2-5.5 6.5-5.5s5.9 1.9 6.5 5.5"/><path d="M16 4.8a3.4 3.4 0 0 1 0 6.4M18 14.8c2 .7 3.2 2.4 3.5 5.2"/></svg><span>People</span></a>
+      <a href="#week" data-tab="week"><svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/><path d="M8 15h2M12 15h4"/></svg><span>Week</span></a>
+      <a href="#settings" data-tab="settings"><svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg><span>Settings</span></a>
+    </nav>
+
+    <main id="view" tabindex="-1"></main>
+  </div>
+
+  <button class="fab" id="fab" type="button" data-action="new-contact" aria-label="Add contact">
+    <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+  </button>
+
+  <dialog id="sheet" aria-labelledby="sheetTitle"></dialog>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="app.js" type="module"></script>
+</body>
+</html>
