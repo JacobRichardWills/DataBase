@@ -1,20 +1,20 @@
 {
   "name": "Lead Book",
   "short_name": "Lead Book",
-  "description": "Track inspection leads, follow-ups and weekly goals.",
-  "start_url": "./#today",
+  "description": "Track inspection clients, follow-ups, tasks and wins.",
+  "start_url": "./#dashboard",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#16365E",
-  "theme_color": "#16365E",
+  "background_color": "#1F5594",
+  "theme_color": "#1F5594",
   "icons": [
     { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
     { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
     { "src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ],
   "shortcuts": [
-    { "name": "Today", "url": "./#today" },
-    { "name": "People", "url": "./#people" }
+    { "name": "Dashboard", "url": "./#dashboard" },
+    { "name": "Clients", "url": "./#clients" }
   ]
 }

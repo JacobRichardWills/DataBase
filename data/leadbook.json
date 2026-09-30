@@ -1,0 +1,928 @@
+{
+ "version": 2,
+ "clients": [
+  {
+   "id": "ex-c1",
+   "name": "Megan Tran",
+   "business": "Summit Peak Realty",
+   "type": "Realtor",
+   "phone": "801-555-0142",
+   "email": "megan.tran@example.com",
+   "address": "7800 S Redwood Rd, West Jordan, UT",
+   "source": "Networking event",
+   "referredBy": "",
+   "notes": "Prefers texts over calls. Coffee: oat latte.",
+   "stages": {
+    "1": "2026-09-18"
+   },
+   "nextFollowUp": "2026-09-28",
+   "followUpNote": "Send sample inspection report",
+   "archived": false,
+   "archivedAt": "",
+   "createdAt": "2026-09-18T15:00:00.000Z",
+   "updatedAt": "2026-09-29T15:00:00.000Z",
+   "example": true,
+   "activities": [
+    {
+     "id": "ex-a1",
+     "type": "in_person",
+     "title": "Met at WFRMLS mixer",
+     "date": "2026-09-18",
+     "note": "Buyer's agent, mostly West Jordan / South Jordan. Asked about turnaround time.",
+     "createdAt": "2026-09-18T15:00:00.000Z",
+     "updatedAt": "2026-09-18T15:00:00.000Z"
+    },
+    {
+     "id": "ex-a2",
+     "type": "text",
+     "title": "Text sent",
+     "date": "2026-09-21",
+     "note": "Thanks for chatting — here's my card.",
+     "createdAt": "2026-09-21T15:00:00.000Z",
+     "updatedAt": "2026-09-21T15:00:00.000Z"
+    },
+    {
+     "id": "ex-a3",
+     "type": "call",
+     "title": "Phone call",
+     "date": "2026-09-25",
+     "note": "Has 3 buyers under contract in October. Wants to see a sample report first.",
+     "createdAt": "2026-09-25T15:00:00.000Z",
+     "updatedAt": "2026-09-25T15:00:00.000Z"
+    },
+    {
+     "id": "ex-a4",
+     "type": "stage",
+     "stage": 1,
+     "title": "Initial connection",
+     "date": "2026-09-18",
+     "note": "",
+     "createdAt": "2026-09-18T15:00:00.000Z",
+     "updatedAt": "2026-09-18T15:00:00.000Z"
+    }
+   ]
+  },
+  {
+   "id": "ex-c2",
+   "name": "Carlos & Ana Mendez",
+   "business": "",
+   "type": "Homebuyer",
+   "phone": "385-555-0199",
+   "email": "",
+   "address": "4521 W Sugar Factory Rd, West Jordan, UT",
+   "source": "Referral",
+   "referredBy": "Megan Tran",
+   "notes": "",
+   "stages": {
+    "1": "2026-09-24",
+    "2": "2026-09-28"
+   },
+   "nextFollowUp": "2026-09-30",
+   "followUpNote": "Confirm Saturday 9am + gate code",
+   "archived": false,
+   "archivedAt": "",
+   "createdAt": "2026-09-24T15:00:00.000Z",
+   "updatedAt": "2026-09-29T15:00:00.000Z",
+   "example": true,
+   "activities": [
+    {
+     "id": "ex-a5",
+     "type": "call",
+     "title": "Phone call",
+     "date": "2026-09-24",
+     "note": "First-time buyers, 1998 rambler. Worried about the roof.",
+     "createdAt": "2026-09-24T15:00:00.000Z",
+     "updatedAt": "2026-09-24T15:00:00.000Z"
+    },
+    {
+     "id": "ex-a6",
+     "type": "quote",
+     "title": "Sent a quote",
+     "date": "2026-09-25",
+     "note": "Full inspection + radon, $475.",
+     "createdAt": "2026-09-25T15:00:00.000Z",
+     "updatedAt": "2026-09-25T15:00:00.000Z"
+    },
+    {
+     "id": "ex-a7",
+     "type": "text",
+     "title": "Text sent",
+     "date": "2026-09-28",
+     "note": "Booked for Sat 10/3 at 9am.",
+     "createdAt": "2026-09-28T15:00:00.000Z",
+     "updatedAt": "2026-09-28T15:00:00.000Z"
+    },
+    {
+     "id": "ex-a8",
+     "type": "stage",
+     "stage": 1,
+     "title": "Initial connection",
+     "date": "2026-09-24",
+     "note": "",
+     "createdAt": "2026-09-24T15:00:00.000Z",
+     "updatedAt": "2026-09-24T15:00:00.000Z"
+    },
+    {
+     "id": "ex-a9",
+     "type": "stage",
+     "stage": 2,
+     "title": "Service scheduled",
+     "date": "2026-09-28",
+     "note": "",
+     "createdAt": "2026-09-28T15:00:00.000Z",
+     "updatedAt": "2026-09-28T15:00:00.000Z"
+    }
+   ]
+  },
+  {
+   "id": "ex-c3",
+   "name": "Jordan Blake",
+   "business": "Wasatch Rentals",
+   "type": "Property manager",
+   "phone": "",
+   "email": "jordan@example.com",
+   "address": "",
+   "source": "Website",
+   "referredBy": "",
+   "notes": "",
+   "stages": {
+    "1": "2026-09-29"
+   },
+   "nextFollowUp": "2026-10-01",
+   "followUpNote": "Intro call about move-in/move-out inspections",
+   "archived": false,
+   "archivedAt": "",
+   "createdAt": "2026-09-29T15:00:00.000Z",
+   "updatedAt": "2026-09-29T15:00:00.000Z",
+   "example": true,
+   "activities": [
+    {
+     "id": "ex-a10",
+     "type": "email",
+     "title": "Email sent",
+     "date": "2026-09-29",
+     "note": "Replied to their website inquiry. Manages ~40 units in Taylorsville.",
+     "createdAt": "2026-09-29T15:00:00.000Z",
+     "updatedAt": "2026-09-29T15:00:00.000Z"
+    },
+    {
+     "id": "ex-a11",
+     "type": "stage",
+     "stage": 1,
+     "title": "Initial connection",
+     "date": "2026-09-29",
+     "note": "",
+     "createdAt": "2026-09-29T15:00:00.000Z",
+     "updatedAt": "2026-09-29T15:00:00.000Z"
+    }
+   ]
+  },
+  {
+   "id": "ex-c4",
+   "name": "The Olsens",
+   "business": "",
+   "type": "Homeowner / seller",
+   "phone": "801-555-0177",
+   "email": "",
+   "address": "Oquirrh Shadows, West Jordan",
+   "source": "Door knock",
+   "referredBy": "",
+   "notes": "Thinking about listing in spring. Pre-listing inspection?",
+   "stages": {
+    "1": "2026-09-30"
+   },
+   "nextFollowUp": "",
+   "followUpNote": "",
+   "archived": false,
+   "archivedAt": "",
+   "createdAt": "2026-09-30T15:00:00.000Z",
+   "updatedAt": "2026-09-30T15:00:00.000Z",
+   "example": true,
+   "activities": [
+    {
+     "id": "ex-a12",
+     "type": "stage",
+     "stage": 1,
+     "title": "Initial connection",
+     "date": "2026-09-30",
+     "note": "",
+     "createdAt": "2026-09-30T15:00:00.000Z",
+     "updatedAt": "2026-09-30T15:00:00.000Z"
+    }
+   ]
+  },
+  {
+   "id": "ex-c5",
+   "name": "Priya Shah",
+   "business": "Beehive Mortgage",
+   "type": "Lender",
+   "phone": "801-555-0110",
+   "email": "priya@example.com",
+   "address": "",
+   "source": "Networking event",
+   "referredBy": "",
+   "notes": "",
+   "stages": {
+    "1": "2026-09-22"
+   },
+   "nextFollowUp": "2026-10-03",
+   "followUpNote": "Drop off rate card + cards",
+   "archived": false,
+   "archivedAt": "",
+   "createdAt": "2026-09-22T15:00:00.000Z",
+   "updatedAt": "2026-09-29T15:00:00.000Z",
+   "example": true,
+   "activities": [
+    {
+     "id": "ex-a13",
+     "type": "in_person",
+     "title": "Met in person",
+     "date": "2026-09-22",
+     "note": "Stopped by the branch. She refers to 2 inspectors now, open to a third.",
+     "createdAt": "2026-09-22T15:00:00.000Z",
+     "updatedAt": "2026-09-22T15:00:00.000Z"
+    },
+    {
+     "id": "ex-a14",
+     "type": "stage",
+     "stage": 1,
+     "title": "Initial connection",
+     "date": "2026-09-22",
+     "note": "",
+     "createdAt": "2026-09-22T15:00:00.000Z",
+     "updatedAt": "2026-09-22T15:00:00.000Z"
+    }
+   ]
+  },
+  {
+   "id": "ex-c6",
+   "name": "Dave Kimball",
+   "business": "KW South Valley",
+   "type": "Realtor",
+   "phone": "801-555-0163",
+   "email": "dave.k@example.com",
+   "address": "",
+   "source": "Realtor",
+   "referredBy": "",
+   "notes": "Top producer. Likes reports same day.",
+   "stages": {
+    "1": "2026-08-31",
+    "2": "2026-09-09",
+    "3": "2026-09-12"
+   },
+   "nextFollowUp": "2026-09-29",
+   "followUpNote": "Ask for a review + next referral",
+   "archived": false,
+   "archivedAt": "",
+   "createdAt": "2026-08-31T15:00:00.000Z",
+   "updatedAt": "2026-09-29T15:00:00.000Z",
+   "example": true,
+   "activities": [
+    {
+     "id": "ex-a15",
+     "type": "service",
+     "title": "Inspection",
+     "date": "2026-09-12",
+     "note": "4-bed in Riverton for his buyer. Found a failing water heater TPR valve.",
+     "createdAt": "2026-09-12T15:00:00.000Z",
+     "updatedAt": "2026-09-12T15:00:00.000Z"
+    },
+    {
+     "id": "ex-a16",
+     "type": "text",
+     "title": "Text sent",
+     "date": "2026-09-13",
+     "note": "Sent the report. Buyer negotiated a $1,200 credit.",
+     "createdAt": "2026-09-13T15:00:00.000Z",
+     "updatedAt": "2026-09-13T15:00:00.000Z"
+    },
+    {
+     "id": "ex-a17",
+     "type": "stage",
+     "stage": 1,
+     "title": "Initial connection",
+     "date": "2026-08-31",
+     "note": "",
+     "createdAt": "2026-08-31T15:00:00.000Z",
+     "updatedAt": "2026-08-31T15:00:00.000Z"
+    },
+    {
+     "id": "ex-a18",
+     "type": "stage",
+     "stage": 2,
+     "title": "Service scheduled",
+     "date": "2026-09-09",
+     "note": "",
+     "createdAt": "2026-09-09T15:00:00.000Z",
+     "updatedAt": "2026-09-09T15:00:00.000Z"
+    },
+    {
+     "id": "ex-a19",
+     "type": "stage",
+     "stage": 3,
+     "title": "Service completed",
+     "date": "2026-09-12",
+     "note": "",
+     "createdAt": "2026-09-12T15:00:00.000Z",
+     "updatedAt": "2026-09-12T15:00:00.000Z"
+    }
+   ]
+  },
+  {
+   "id": "ex-c7",
+   "name": "Emily Nguyen",
+   "business": "",
+   "type": "Homebuyer",
+   "phone": "385-555-0121",
+   "email": "",
+   "address": "",
+   "source": "Referral",
+   "referredBy": "Dave Kimball",
+   "notes": "",
+   "stages": {
+    "1": "2026-09-26"
+   },
+   "nextFollowUp": "2026-10-05",
+   "followUpNote": "Check if offer was accepted",
+   "archived": false,
+   "archivedAt": "",
+   "createdAt": "2026-09-26T15:00:00.000Z",
+   "updatedAt": "2026-09-29T15:00:00.000Z",
+   "example": true,
+   "activities": [
+    {
+     "id": "ex-a20",
+     "type": "text",
+     "title": "Text sent",
+     "date": "2026-09-26",
+     "note": "Under offer on a townhome in Daybreak. Will know by Monday.",
+     "createdAt": "2026-09-26T15:00:00.000Z",
+     "updatedAt": "2026-09-26T15:00:00.000Z"
+    },
+    {
+     "id": "ex-a21",
+     "type": "stage",
+     "stage": 1,
+     "title": "Initial connection",
+     "date": "2026-09-26",
+     "note": "",
+     "createdAt": "2026-09-26T15:00:00.000Z",
+     "updatedAt": "2026-09-26T15:00:00.000Z"
+    }
+   ]
+  },
+  {
+   "id": "ex-c8",
+   "name": "Brandon Hale",
+   "business": "Hale Custom Homes",
+   "type": "Contractor",
+   "phone": "801-555-0188",
+   "email": "",
+   "address": "",
+   "source": "Networking event",
+   "referredBy": "",
+   "notes": "",
+   "stages": {
+    "1": "2026-09-15"
+   },
+   "nextFollowUp": "",
+   "followUpNote": "",
+   "archived": false,
+   "archivedAt": "",
+   "createdAt": "2026-09-15T15:00:00.000Z",
+   "updatedAt": "2026-09-29T15:00:00.000Z",
+   "example": true,
+   "activities": [
+    {
+     "id": "ex-a22",
+     "type": "call",
+     "title": "Phone call",
+     "date": "2026-09-15",
+     "note": "Builds 6–8 homes/yr. Possible phase inspections next year.",
+     "createdAt": "2026-09-15T15:00:00.000Z",
+     "updatedAt": "2026-09-15T15:00:00.000Z"
+    },
+    {
+     "id": "ex-a23",
+     "type": "stage",
+     "stage": 1,
+     "title": "Initial connection",
+     "date": "2026-09-15",
+     "note": "",
+     "createdAt": "2026-09-15T15:00:00.000Z",
+     "updatedAt": "2026-09-15T15:00:00.000Z"
+    }
+   ]
+  },
+  {
+   "id": "ex-c9",
+   "name": "Sarah Whitaker",
+   "business": "",
+   "type": "Homebuyer",
+   "phone": "801-555-0104",
+   "email": "sarah.w@example.com",
+   "address": "",
+   "source": "Website",
+   "referredBy": "",
+   "notes": "",
+   "stages": {
+    "1": "2026-08-21",
+    "2": "2026-08-26",
+    "3": "2026-08-28"
+   },
+   "nextFollowUp": "",
+   "followUpNote": "",
+   "archived": false,
+   "archivedAt": "",
+   "createdAt": "2026-08-21T15:00:00.000Z",
+   "updatedAt": "2026-09-29T15:00:00.000Z",
+   "example": true,
+   "activities": [
+    {
+     "id": "ex-a24",
+     "type": "service",
+     "title": "Inspection",
+     "date": "2026-08-28",
+     "note": "Condo in Midvale. Minor items only.",
+     "createdAt": "2026-08-28T15:00:00.000Z",
+     "updatedAt": "2026-08-28T15:00:00.000Z"
+    },
+    {
+     "id": "ex-a25",
+     "type": "email",
+     "title": "Email sent",
+     "date": "2026-08-29",
+     "note": "Report + maintenance checklist.",
+     "createdAt": "2026-08-29T15:00:00.000Z",
+     "updatedAt": "2026-08-29T15:00:00.000Z"
+    },
+    {
+     "id": "ex-a26",
+     "type": "stage",
+     "stage": 1,
+     "title": "Initial connection",
+     "date": "2026-08-21",
+     "note": "",
+     "createdAt": "2026-08-21T15:00:00.000Z",
+     "updatedAt": "2026-08-21T15:00:00.000Z"
+    },
+    {
+     "id": "ex-a27",
+     "type": "stage",
+     "stage": 2,
+     "title": "Service scheduled",
+     "date": "2026-08-26",
+     "note": "",
+     "createdAt": "2026-08-26T15:00:00.000Z",
+     "updatedAt": "2026-08-26T15:00:00.000Z"
+    },
+    {
+     "id": "ex-a28",
+     "type": "stage",
+     "stage": 3,
+     "title": "Service completed",
+     "date": "2026-08-28",
+     "note": "",
+     "createdAt": "2026-08-28T15:00:00.000Z",
+     "updatedAt": "2026-08-28T15:00:00.000Z"
+    }
+   ]
+  },
+  {
+   "id": "ex-c10",
+   "name": "Rocky Mountain Rentals",
+   "business": "Rocky Mountain Rentals LLC",
+   "type": "Investor",
+   "phone": "801-555-0150",
+   "email": "ops@example.com",
+   "address": "",
+   "source": "Referral",
+   "referredBy": "",
+   "notes": "Recurring quarterly. Invoice net-15.",
+   "stages": {
+    "1": "2026-07-22",
+    "2": "2026-07-30",
+    "3": "2026-08-01",
+    "4": "2026-08-31"
+   },
+   "nextFollowUp": "2026-10-10",
+   "followUpNote": "Quarterly walkthrough — 3 units",
+   "archived": false,
+   "archivedAt": "",
+   "createdAt": "2026-07-22T15:00:00.000Z",
+   "updatedAt": "2026-09-29T15:00:00.000Z",
+   "example": true,
+   "activities": [
+    {
+     "id": "ex-a29",
+     "type": "service",
+     "title": "Inspection",
+     "date": "2026-08-01",
+     "note": "Duplex in Kearns.",
+     "createdAt": "2026-08-01T15:00:00.000Z",
+     "updatedAt": "2026-08-01T15:00:00.000Z"
+    },
+    {
+     "id": "ex-a30",
+     "type": "service",
+     "title": "Inspection",
+     "date": "2026-08-31",
+     "note": "Quarterly walkthrough, 3 units. Scheduled every 3 months.",
+     "createdAt": "2026-08-31T15:00:00.000Z",
+     "updatedAt": "2026-08-31T15:00:00.000Z"
+    },
+    {
+     "id": "ex-a31",
+     "type": "stage",
+     "stage": 1,
+     "title": "Initial connection",
+     "date": "2026-07-22",
+     "note": "",
+     "createdAt": "2026-07-22T15:00:00.000Z",
+     "updatedAt": "2026-07-22T15:00:00.000Z"
+    },
+    {
+     "id": "ex-a32",
+     "type": "stage",
+     "stage": 2,
+     "title": "Service scheduled",
+     "date": "2026-07-30",
+     "note": "",
+     "createdAt": "2026-07-30T15:00:00.000Z",
+     "updatedAt": "2026-07-30T15:00:00.000Z"
+    },
+    {
+     "id": "ex-a33",
+     "type": "stage",
+     "stage": 3,
+     "title": "Service completed",
+     "date": "2026-08-01",
+     "note": "",
+     "createdAt": "2026-08-01T15:00:00.000Z",
+     "updatedAt": "2026-08-01T15:00:00.000Z"
+    },
+    {
+     "id": "ex-a34",
+     "type": "stage",
+     "stage": 4,
+     "title": "Recurring client",
+     "date": "2026-08-31",
+     "note": "",
+     "createdAt": "2026-08-31T15:00:00.000Z",
+     "updatedAt": "2026-08-31T15:00:00.000Z"
+    }
+   ]
+  },
+  {
+   "id": "ex-c11",
+   "name": "Luis Ortega",
+   "business": "",
+   "type": "Homebuyer",
+   "phone": "385-555-0135",
+   "email": "",
+   "address": "",
+   "source": "Open house",
+   "referredBy": "",
+   "notes": "",
+   "stages": {
+    "1": "2026-09-27"
+   },
+   "nextFollowUp": "2026-09-29",
+   "followUpNote": "Call back — left voicemail",
+   "archived": false,
+   "archivedAt": "",
+   "createdAt": "2026-09-27T15:00:00.000Z",
+   "updatedAt": "2026-09-29T15:00:00.000Z",
+   "example": true,
+   "activities": [
+    {
+     "id": "ex-a35",
+     "type": "call",
+     "title": "Left voicemail",
+     "date": "2026-09-27",
+     "note": "",
+     "createdAt": "2026-09-27T15:00:00.000Z",
+     "updatedAt": "2026-09-27T15:00:00.000Z"
+    },
+    {
+     "id": "ex-a36",
+     "type": "stage",
+     "stage": 1,
+     "title": "Initial connection",
+     "date": "2026-09-27",
+     "note": "",
+     "createdAt": "2026-09-27T15:00:00.000Z",
+     "updatedAt": "2026-09-27T15:00:00.000Z"
+    }
+   ]
+  },
+  {
+   "id": "ex-c12",
+   "name": "Hannah Brooks",
+   "business": "Redfin",
+   "type": "Realtor",
+   "phone": "",
+   "email": "hannah.b@example.com",
+   "address": "",
+   "source": "Social media",
+   "referredBy": "",
+   "notes": "",
+   "stages": {
+    "1": "2026-09-21"
+   },
+   "nextFollowUp": "2026-10-07",
+   "followUpNote": "Invite to lunch-and-learn",
+   "archived": false,
+   "archivedAt": "",
+   "createdAt": "2026-09-21T15:00:00.000Z",
+   "updatedAt": "2026-09-29T15:00:00.000Z",
+   "example": true,
+   "activities": [
+    {
+     "id": "ex-a37",
+     "type": "email",
+     "title": "Email sent",
+     "date": "2026-09-21",
+     "note": "Intro email + one-page overview.",
+     "createdAt": "2026-09-21T15:00:00.000Z",
+     "updatedAt": "2026-09-21T15:00:00.000Z"
+    },
+    {
+     "id": "ex-a38",
+     "type": "stage",
+     "stage": 1,
+     "title": "Initial connection",
+     "date": "2026-09-21",
+     "note": "",
+     "createdAt": "2026-09-21T15:00:00.000Z",
+     "updatedAt": "2026-09-21T15:00:00.000Z"
+    }
+   ]
+  },
+  {
+   "id": "ex-c13",
+   "name": "Kevin Park",
+   "business": "",
+   "type": "Homebuyer",
+   "phone": "801-555-0111",
+   "email": "",
+   "address": "",
+   "source": "Referral",
+   "referredBy": "",
+   "notes": "",
+   "stages": {
+    "1": "2026-07-12",
+    "2": "2026-07-17",
+    "3": "2026-07-19"
+   },
+   "nextFollowUp": "",
+   "followUpNote": "",
+   "archived": true,
+   "archivedAt": "2026-09-10T15:00:00.000Z",
+   "createdAt": "2026-07-12T15:00:00.000Z",
+   "updatedAt": "2026-09-29T15:00:00.000Z",
+   "example": true,
+   "activities": [
+    {
+     "id": "ex-a39",
+     "type": "service",
+     "title": "Inspection",
+     "date": "2026-07-19",
+     "note": "",
+     "createdAt": "2026-07-19T15:00:00.000Z",
+     "updatedAt": "2026-07-19T15:00:00.000Z"
+    },
+    {
+     "id": "ex-a40",
+     "type": "stage",
+     "stage": 1,
+     "title": "Initial connection",
+     "date": "2026-07-12",
+     "note": "",
+     "createdAt": "2026-07-12T15:00:00.000Z",
+     "updatedAt": "2026-07-12T15:00:00.000Z"
+    },
+    {
+     "id": "ex-a41",
+     "type": "stage",
+     "stage": 2,
+     "title": "Service scheduled",
+     "date": "2026-07-17",
+     "note": "",
+     "createdAt": "2026-07-17T15:00:00.000Z",
+     "updatedAt": "2026-07-17T15:00:00.000Z"
+    },
+    {
+     "id": "ex-a42",
+     "type": "stage",
+     "stage": 3,
+     "title": "Service completed",
+     "date": "2026-07-19",
+     "note": "",
+     "createdAt": "2026-07-19T15:00:00.000Z",
+     "updatedAt": "2026-07-19T15:00:00.000Z"
+    }
+   ]
+  },
+  {
+   "id": "ex-c14",
+   "name": "Greg Tanner",
+   "business": "",
+   "type": "Homeowner / seller",
+   "phone": "",
+   "email": "",
+   "address": "",
+   "source": "Door knock",
+   "referredBy": "",
+   "notes": "",
+   "stages": {
+    "1": "2026-08-11"
+   },
+   "nextFollowUp": "",
+   "followUpNote": "",
+   "archived": true,
+   "archivedAt": "2026-09-10T15:00:00.000Z",
+   "createdAt": "2026-08-11T15:00:00.000Z",
+   "updatedAt": "2026-09-29T15:00:00.000Z",
+   "example": true,
+   "activities": [
+    {
+     "id": "ex-a43",
+     "type": "call",
+     "title": "Phone call",
+     "date": "2026-08-11",
+     "note": "Decided not to sell this year.",
+     "createdAt": "2026-08-11T15:00:00.000Z",
+     "updatedAt": "2026-08-11T15:00:00.000Z"
+    },
+    {
+     "id": "ex-a44",
+     "type": "stage",
+     "stage": 1,
+     "title": "Initial connection",
+     "date": "2026-08-11",
+     "note": "",
+     "createdAt": "2026-08-11T15:00:00.000Z",
+     "updatedAt": "2026-08-11T15:00:00.000Z"
+    }
+   ]
+  }
+ ],
+ "tasks": [
+  {
+   "id": "ex-t1",
+   "kind": "task",
+   "text": "Order more business cards",
+   "due": "2026-09-29",
+   "clientId": "",
+   "done": false,
+   "createdAt": "2026-09-24T15:00:00.000Z",
+   "updatedAt": "2026-09-24T15:00:00.000Z",
+   "example": true
+  },
+  {
+   "id": "ex-t2",
+   "kind": "task",
+   "text": "Print sample report for Megan",
+   "due": "2026-09-30",
+   "clientId": "ex-c1",
+   "done": false,
+   "createdAt": "2026-09-25T15:00:00.000Z",
+   "updatedAt": "2026-09-25T15:00:00.000Z",
+   "example": true
+  },
+  {
+   "id": "ex-t3",
+   "kind": "task",
+   "text": "Renew radon test kit supply",
+   "due": "2026-10-04",
+   "clientId": "",
+   "done": false,
+   "createdAt": "2026-09-26T15:00:00.000Z",
+   "updatedAt": "2026-09-26T15:00:00.000Z",
+   "example": true
+  },
+  {
+   "id": "ex-t4",
+   "kind": "task",
+   "text": "Set up Google Business profile",
+   "due": "",
+   "clientId": "",
+   "done": false,
+   "createdAt": "2026-09-27T15:00:00.000Z",
+   "updatedAt": "2026-09-27T15:00:00.000Z",
+   "example": true
+  },
+  {
+   "id": "ex-t5",
+   "kind": "task",
+   "text": "Buy moisture meter",
+   "due": "2026-09-27",
+   "clientId": "",
+   "done": true,
+   "doneAt": "2026-09-27T15:00:00.000Z",
+   "createdAt": "2026-09-28T15:00:00.000Z",
+   "updatedAt": "2026-09-28T15:00:00.000Z",
+   "example": true
+  },
+  {
+   "id": "ex-n1",
+   "kind": "note",
+   "text": "Lunch-and-learn idea: \"10 things that kill a deal\" for realtor offices",
+   "color": "yellow",
+   "createdAt": "2026-09-29T15:00:00.000Z",
+   "updatedAt": "2026-09-29T15:00:00.000Z",
+   "example": true
+  },
+  {
+   "id": "ex-n2",
+   "kind": "note",
+   "text": "Ask every client:\nWho else do you know buying this year?",
+   "color": "mint",
+   "createdAt": "2026-09-30T15:00:00.000Z",
+   "updatedAt": "2026-09-30T15:00:00.000Z",
+   "example": true
+  },
+  {
+   "id": "ex-n3",
+   "kind": "note",
+   "text": "Gate code for Mendez: #4521",
+   "color": "sky",
+   "createdAt": "2026-10-01T15:00:00.000Z",
+   "updatedAt": "2026-10-01T15:00:00.000Z",
+   "example": true
+  }
+ ],
+ "wins": [
+  {
+   "id": "ex-w1",
+   "text": "First referral from a realtor — Dave sent over his buyer!",
+   "by": "me",
+   "date": "2026-09-09",
+   "createdAt": "2026-09-09T18:00:00.000Z",
+   "updatedAt": "2026-09-09T18:00:00.000Z",
+   "example": true
+  },
+  {
+   "id": "ex-w2",
+   "text": "Booked the Mendez inspection for Saturday.",
+   "by": "me",
+   "date": "2026-09-28",
+   "createdAt": "2026-09-28T18:00:00.000Z",
+   "updatedAt": "2026-09-28T18:00:00.000Z",
+   "example": true
+  },
+  {
+   "id": "ex-w3",
+   "text": "Rocky Mountain Rentals signed on for quarterly walkthroughs — your first recurring client. That's steady income on the calendar. 🎉",
+   "by": "claude",
+   "date": "2026-08-31",
+   "createdAt": "2026-08-31T18:00:00.000Z",
+   "updatedAt": "2026-08-31T18:00:00.000Z",
+   "example": true
+  },
+  {
+   "id": "ex-w4",
+   "text": "Five new contacts in one week and a booked inspection. Megan's 3 buyers could be your next big win — that sample report is worth sending today.",
+   "by": "claude",
+   "date": "2026-09-30",
+   "createdAt": "2026-09-30T18:00:00.000Z",
+   "updatedAt": "2026-09-30T18:00:00.000Z",
+   "example": true
+  },
+  {
+   "id": "ex-w5",
+   "text": "Got my first 5-star Google review from Sarah.",
+   "by": "me",
+   "date": "2026-08-31",
+   "createdAt": "2026-08-31T18:00:00.000Z",
+   "updatedAt": "2026-08-31T18:00:00.000Z",
+   "example": true
+  }
+ ],
+ "goals": {
+  "items": [
+   {
+    "id": "new_clients",
+    "label": "New contacts added",
+    "target": 10
+   },
+   {
+    "id": "outreach",
+    "label": "Texts, calls & visits",
+    "target": 25
+   },
+   {
+    "id": "scheduled",
+    "label": "Services scheduled",
+    "target": 3
+   },
+   {
+    "id": "completed",
+    "label": "Services completed",
+    "target": 2
+   }
+  ],
+  "updatedAt": "2026-09-30T00:00:00.000Z"
+ }
+}
