@@ -65,6 +65,11 @@ const ICON = {
   target: '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r=".8"/>',
   bell: '<path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/>',
   device: '<rect x="7" y="3" width="10" height="18" rx="2"/><path d="M11 18h2"/>',
+  globe: '<circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.5 2.6 3.5 5.4 3.5 8.5s-1 5.9-3.5 8.5c-2.5-2.6-3.5-5.4-3.5-8.5s1-5.9 3.5-8.5z"/>',
+  external: '<path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/>',
+  inbox: '<path d="M3.5 13.5 6 5h12l2.5 8.5V19a1 1 0 0 1-1 1h-15a1 1 0 0 1-1-1z"/><path d="M3.5 13.5H9l1 2h4l1-2h5.5"/>',
+  up: '<path d="m6 14.5 6-6 6 6"/>',
+  down: '<path d="m6 9.5 6 6 6-6"/>',
 };
 const icon = (n, cls = '') => `<svg viewBox="0 0 24 24" class="${cls}" aria-hidden="true">${ICON[n] || ''}</svg>`;
 
@@ -99,9 +104,23 @@ const defaultCfg = () => ({
   theme: 'auto', lightFrom: 7, lightTo: 19, business: '', name: 'Jacob',
   owner: 'JacobRichardWills', repo: 'DataBase', branch: 'main', path: 'data/leadbook.json', token: '',
   device: guessDevice(),
+  websiteUrl: 'https://jacobrichardwills.github.io/website/',
+  quotesRepo: 'quotes',
+  dash: { order: [], hidden: [] },
 });
+// Dashboard sections (layout is per device).
+const DASH_SECTIONS = [
+  ['website', 'Website link'], ['quotes', 'Quote requests'], ['attention', 'Needs attention'], ['tasks', 'Tasks & reminders'],
+  ['upcoming', 'Next 7 days'], ['wins', 'Wins'], ['goals', 'Weekly goals'], ['notes', 'Sticky notes'],
+];
+function dashOrder() {
+  const ids = DASH_SECTIONS.map(d => d[0]);
+  const order = (cfg.dash.order || []).filter(id => ids.includes(id));
+  return [...order, ...ids.filter(id => !order.includes(id))];
+}
 
 let cfg = Object.assign(defaultCfg(), LS.get('lb.cfg', {}));
+cfg.dash = { order: [], hidden: [], ...(cfg.dash || {}) };
 if (cfg.repo === 'DataBase-data') Object.assign(cfg, { repo: 'DataBase', path: 'data/leadbook.json', branch: 'main' }); // older setup
 LS.set('lb.cfg', cfg);
 
@@ -116,10 +135,10 @@ normalize(draft);
 let undo = LS.get('lb2.undo', []);            // [{key, text, before, pendingBefore}] newest last
 let snap = structuredClone(draft);             // draft as of the last recorded change
 let changeSeq = 0;
-let ui = { filter: 'active', q: '', showDone: false, histFilter: 'all', notesOpen: {} };
+let ui = { filter: 'active', q: '', showDone: false, histFilter: 'all', notesOpen: {}, setOpen: {} };
 
 function normalize(d) {
-  d.clients ||= []; d.tasks ||= []; d.wins ||= [];
+  d.clients ||= []; d.tasks ||= []; d.wins ||= []; d.quoteStatus ||= {};
   d.goals ||= structuredClone(DEFAULT_GOALS);
   d.goals.items ||= structuredClone(DEFAULT_GOALS.items);
   for (const c of d.clients) { c.activities ||= []; c.stages ||= {}; }
@@ -417,6 +436,16 @@ function mergeList(a = [], b = [], withActs = false, anc = null) {
   return out.sort((p, q) => (p.createdAt || '').localeCompare(q.createdAt || ''));
 }
 
+function mergeMap(a = {}, b = {}, anc = null) {
+  const out = {};
+  for (const k of new Set([...Object.keys(a), ...Object.keys(b)])) {
+    const x = a[k], o = b[k], c = anc?.[k];
+    if (x && o) out[k] = (x.updatedAt || '') >= (o.updatedAt || '') ? x : o;
+    else if (!(c && canon(x || o) === canon(c))) out[k] = x || o; // drop only if the other side removed it
+  }
+  return out;
+}
+
 // a = local draft, b = copy from the repo, anc = the repo copy this device last saw.
 function mergeDb(a, b, anc = null) {
   a = normalize(structuredClone(a)); b = normalize(structuredClone(b));
@@ -427,6 +456,7 @@ function mergeDb(a, b, anc = null) {
     tasks: mergeList(a.tasks, b.tasks, false, anc ? an.tasks : null),
     wins: mergeList(a.wins, b.wins, false, anc ? an.wins : null),
     goals: (a.goals.updatedAt || '') >= (b.goals.updatedAt || '') ? a.goals : b.goals,
+    quoteStatus: mergeMap(a.quoteStatus, b.quoteStatus, anc ? an.quoteStatus : null),
   };
 }
 
@@ -452,7 +482,9 @@ async function pull({ quiet = true, force = false } = {}) {
       persist(true);
       history.cache = null; history.error = '';           // new saves elsewhere → refresh History too
     }
-    if ((changed || force) && !dialogOpen() && !editingInline()) render();
+    const before = newQuotes().length;
+    await loadQuotes();
+    if ((changed || force || newQuotes().length !== before) && !dialogOpen() && !editingInline()) render();
   } catch (e) {
     console.error(e);
     pull.error = e.message || 'Couldn’t load the latest data.';
@@ -507,6 +539,7 @@ async function save() {
     render();
     toast('Saved to GitHub');
     setTimeout(() => { if (route().name === 'history') loadHistory(true); }, 1500);
+    closeHandledIssues().then(() => render());
   } catch (e) {
     console.error(e);
     save.error = e.message;
@@ -640,6 +673,42 @@ function viewDashboard() {
       <div class="meter ${v >= g.target && g.target ? 'done' : ''}" role="img" aria-label="${v} of ${g.target}"><i style="width:${pct}%"></i></div></div>`;
   }).join('');
 
+  const nq = newQuotes();
+  const parts = {
+    website: cfg.websiteUrl ? `<a class="weblink" href="${esc(cfg.websiteUrl)}" target="_blank" rel="noopener">${icon('globe')}
+        <span><b>Your website</b><span>${esc(cfg.websiteUrl.replace(/^https?:\/\//, '').replace(/\/$/, ''))}</span></span>${icon('external')}</a>` : '',
+    quotes: quotesSection(nq),
+    attention: `<section class="section">
+        ${sectionHead('Needs attention', 'bell', `<span class="count">${attention.length || ''}</span>`)}
+        ${attention.length ? `<ul class="items panel">${attention.map(a => a.html).join('')}</ul>`
+          : empty('You’re all caught up', 'No follow-ups or tasks due today.')}
+      </section>`,
+    tasks: `<section class="section">
+        ${sectionHead('Tasks & reminders', 'task', `<button class="btn sm ghost" type="button" data-action="add-task">${icon('plus')}Add</button>`)}
+        ${laterTasks.length ? `<ul class="items panel">${laterTasks.map(taskItem).join('')}</ul>` : empty('No upcoming tasks', 'Add a to-do, with or without a date.')}
+        ${doneTasks.length ? `<button class="btn sm ghost" type="button" data-action="toggle-done" style="margin-top:6px">${ui.showDone ? 'Hide' : 'Show'} completed (${doneTasks.length})</button>
+          ${ui.showDone ? `<ul class="items panel" style="margin-top:6px">${doneTasks.map(taskItem).join('')}</ul>` : ''}` : ''}
+      </section>`,
+    upcoming: `<section class="section">
+        ${sectionHead('Next 7 days', 'calendar', `<span class="count">${upcoming.length || ''}</span>`)}
+        ${upcoming.length ? `<ul class="items panel">${upcoming.map(c => clientItem(c, c.followUpNote || 'Follow up', c.nextFollowUp)).join('')}</ul>` : empty('Nothing scheduled', 'Set a follow-up date on a client and it’ll show here.')}
+      </section>`,
+    wins: `<section class="section">
+        ${sectionHead('Wins', 'trophy', `<button class="btn sm ghost" type="button" data-action="add-win">${icon('plus')}Add</button>`)}
+        ${wins.length ? `<ul class="wins">${wins.slice(0, 6).map(winItem).join('')}</ul>` : empty('Log your first win', 'A new referral, a booked inspection, a great conversation — write it down.')}
+      </section>`,
+    goals: `<section class="section">
+        ${sectionHead('Weekly goals', 'target', `<span><span class="draft-flag">In the works</span> <button class="btn sm ghost" type="button" data-action="edit-goals">Edit</button></span>`)}
+        <div class="goals">${goals}</div>
+      </section>`,
+    notes: `<section class="section">
+        ${sectionHead('Sticky notes', 'sticky', `<button class="btn sm ghost" type="button" data-action="add-note">${icon('plus')}Add</button>`)}
+        ${notes.length ? `<div class="stickies">${notes.map(k => `<button type="button" class="sticky" data-color="${esc(k.color || 'yellow')}" data-action="edit-note" data-id="${k.id}">${esc(k.text)}<small>${esc(relWhen(k.createdAt))}</small></button>`).join('')}</div>`
+          : empty('No sticky notes', 'Jot down quick reminders here.')}
+      </section>`,
+  };
+  const need = attention.length + nq.length;
+
   return `
   <section class="hero">
     <img src="icons/icon-192.png" alt="">
@@ -649,51 +718,12 @@ function viewDashboard() {
       ${cfg.business ? `<div class="hero-biz">${esc(cfg.business)}</div>` : ''}
     </div>
     <div class="hero-stats">
-      <div class="${overdueCount ? 'hot' : ''}"><b>${attention.length}</b><span>Need attention${overdueCount ? ` · ${overdueCount} overdue` : ''}</span></div>
+      <div class="${overdueCount || nq.length ? 'hot' : ''}"><b>${need}</b><span>Need attention${nq.length ? ` · ${nq.length} new ${nq.length === 1 ? 'quote' : 'quotes'}` : overdueCount ? ` · ${overdueCount} overdue` : ''}</span></div>
       <div><b>${act.length}</b><span>Active clients</span></div>
       <div><b>${winsWeek}</b><span>Wins this week</span></div>
     </div>
   </section>
-
-  <div class="dash">
-    <div class="col-left">
-      <section class="section">
-        ${sectionHead('Needs attention', 'bell', `<span class="count">${attention.length || ''}</span>`)}
-        ${attention.length ? `<ul class="items panel">${attention.map(a => a.html).join('')}</ul>`
-          : empty('You’re all caught up', 'No follow-ups or tasks due today.')}
-      </section>
-
-      <section class="section">
-        ${sectionHead('Tasks & reminders', 'task', `<button class="btn sm ghost" type="button" data-action="add-task">${icon('plus')}Add</button>`)}
-        ${laterTasks.length ? `<ul class="items panel">${laterTasks.map(taskItem).join('')}</ul>` : empty('No upcoming tasks', 'Add a to-do, with or without a date.')}
-        ${doneTasks.length ? `<button class="btn sm ghost" type="button" data-action="toggle-done" style="margin-top:6px">${ui.showDone ? 'Hide' : 'Show'} completed (${doneTasks.length})</button>
-          ${ui.showDone ? `<ul class="items panel" style="margin-top:6px">${doneTasks.map(taskItem).join('')}</ul>` : ''}` : ''}
-      </section>
-
-      <section class="section">
-        ${sectionHead('Next 7 days', 'calendar', `<span class="count">${upcoming.length || ''}</span>`)}
-        ${upcoming.length ? `<ul class="items panel">${upcoming.map(c => clientItem(c, c.followUpNote || 'Follow up', c.nextFollowUp)).join('')}</ul>` : empty('Nothing scheduled', 'Set a follow-up date on a client and it’ll show here.')}
-      </section>
-    </div>
-
-    <div class="col-right">
-      <section class="section">
-        ${sectionHead('Wins', 'trophy', `<button class="btn sm ghost" type="button" data-action="add-win">${icon('plus')}Add</button>`)}
-        ${wins.length ? `<ul class="wins">${wins.slice(0, 6).map(winItem).join('')}</ul>` : empty('Log your first win', 'A new referral, a booked inspection, a great conversation — write it down.')}
-      </section>
-
-      <section class="section">
-        ${sectionHead('Weekly goals', 'target', `<span><span class="draft-flag">In the works</span> <button class="btn sm ghost" type="button" data-action="edit-goals">Edit</button></span>`)}
-        <div class="goals">${goals}</div>
-      </section>
-
-      <section class="section">
-        ${sectionHead('Sticky notes', 'sticky', `<button class="btn sm ghost" type="button" data-action="add-note">${icon('plus')}Add</button>`)}
-        ${notes.length ? `<div class="stickies">${notes.map(k => `<button type="button" class="sticky" data-color="${esc(k.color || 'yellow')}" data-action="edit-note" data-id="${k.id}">${esc(k.text)}<small>${esc(relWhen(k.createdAt))}</small></button>`).join('')}</div>`
-          : empty('No sticky notes', 'Jot down quick reminders here.')}
-      </section>
-    </div>
-  </div>`;
+  <div class="dash">${dashOrder().filter(id => !cfg.dash.hidden.includes(id)).map(id => parts[id] || '').join('')}</div>`;
 }
 
 function clientItem(c, sub, due) {
@@ -718,6 +748,126 @@ function winItem(w) {
   return `<li><button type="button" class="win${claude ? ' by-claude' : ''}" data-action="edit-win" data-id="${w.id}">
     <span class="win-icon">${icon(claude ? 'sparkle' : 'trophy')}</span>
     <span><span class="win-text">${esc(w.text)}</span><span class="win-meta" style="display:block">${claude ? '<b>Claude</b> · ' : ''}${esc(relWhen(w.date))}</span></span></button></li>`;
+}
+
+/* ---------- Quote requests (from the website) ---------- */
+// The website's relay files each quote as an issue labelled "quote" in a
+// private repo. We read open ones here; handling a quote is recorded in
+// draft.quoteStatus (so it saves and undoes like everything else), and the
+// issue is closed once that's saved.
+
+const quotes = { list: LS.get('lb2.quotes', []), error: '', setup: false };
+const quotesApi = () => `https://api.github.com/repos/${encodeURIComponent(cfg.owner)}/${encodeURIComponent(cfg.quotesRepo)}`;
+
+function parseQuote(issue) {
+  let q = {};
+  const m = (issue.body || '').match(/```json\s*([\s\S]*?)```/);
+  if (m) { try { q = JSON.parse(m[1]); } catch { /* fall back to the title */ } }
+  return {
+    id: q.id || 'issue-' + issue.number,
+    name: q.name || issue.title.replace(/^Quote request:\s*/i, '').split(' — ')[0],
+    phone: q.phone || '', email: q.email || '', address: q.address || '', service: q.service || '',
+    timeline: q.timeline || '', message: q.message || '', submittedAt: q.submittedAt || issue.created_at,
+    issue: issue.number, url: issue.html_url,
+  };
+}
+
+async function loadQuotes() {
+  if (!hasToken() || !cfg.quotesRepo) return;
+  try {
+    const r = await gh(`${quotesApi()}/issues?state=open&labels=quote&per_page=50`);
+    if (r.status === 404 || r.status === 403) { quotes.setup = true; quotes.error = ''; return; }
+    if (!r.ok) throw new GhError(r.status, explain(r.status));
+    quotes.list = (await r.json()).filter(i => !i.pull_request).map(parseQuote);
+    quotes.setup = false; quotes.error = '';
+    LS.set('lb2.quotes', quotes.list);
+    closeHandledIssues();
+  } catch (e) { quotes.error = e.message; }
+}
+
+const newQuotes = () => quotes.list.filter(q => !draft.quoteStatus[q.id]).sort((a, b) => (b.submittedAt || '').localeCompare(a.submittedAt || ''));
+
+// Close issues for quotes whose handling is already saved to the repo.
+async function closeHandledIssues() {
+  const saved = base?.quoteStatus || {};
+  for (const q of quotes.list.slice()) {
+    const st = saved[q.id];
+    if (!st || !q.issue) continue;
+    const r = await gh(`${quotesApi()}/issues/${q.issue}`, { method: 'PATCH', body: JSON.stringify({ state: 'closed', state_reason: st.status === 'dismissed' ? 'not_planned' : 'completed' }) }).catch(() => null);
+    if (r && r.ok) quotes.list = quotes.list.filter(x => x.id !== q.id);
+  }
+  LS.set('lb2.quotes', quotes.list);
+}
+
+function quotesSection(nq) {
+  if (!nq.length) {
+    if (quotes.setup) return `<section class="section">${sectionHead('Quote requests', 'inbox')}${empty('Quote requests aren’t connected yet', 'See Settings → Quote requests to finish setup.')}</section>`;
+    return '';
+  }
+  return `<section class="section quotes-sec">
+    ${sectionHead('New quote requests', 'inbox', `<span class="count">${nq.length}</span>`)}
+    <ul class="items panel quotes">${nq.map(q => `<li class="item">
+      <span class="q-badge">${icon('inbox')}</span>
+      <button class="item-main" type="button" data-action="quote" data-q="${esc(q.id)}">
+        <div class="item-title">${esc(q.name)}${q.service ? ` <span class="muted" style="font-weight:500">· ${esc(q.service)}</span>` : ''}</div>
+        <div class="item-sub today">Requested ${esc(timeAgo(q.submittedAt))}${q.address ? ' · ' + esc(q.address) : ''}</div>
+      </button>
+      ${q.phone ? `<a class="icon-btn sm" href="tel:${digits(q.phone)}" aria-label="Call ${esc(q.name)}">${icon('phone')}</a>` : ''}
+    </li>`).join('')}</ul></section>`;
+}
+
+const last10 = p => digits(p || '').slice(-10);
+function matchClientFor(q) {
+  const p = last10(q.phone), e = (q.email || '').toLowerCase();
+  return clients().find(c => (p.length >= 7 && last10(c.phone) === p) || (e && (c.email || '').toLowerCase() === e));
+}
+
+function quoteSheet(q) {
+  const match = matchClientFor(q);
+  const row = (k, v) => v ? `<div><dt>${k}</dt><dd>${v}</dd></div>` : '';
+  const body = `<dl class="q-details">
+      ${row('Name', esc(q.name))}${row('Service', esc(q.service))}
+      ${row('Phone', q.phone ? `<a href="tel:${digits(q.phone)}">${esc(q.phone)}</a>` : '')}
+      ${row('Email', q.email ? `<a href="mailto:${esc(q.email)}">${esc(q.email)}</a>` : '')}
+      ${row('Property', esc(q.address))}${row('Timeline', esc(q.timeline))}
+      ${row('Message', q.message ? `<span style="white-space:pre-wrap">${esc(q.message)}</span>` : '')}
+      ${row('Received', esc(new Date(q.submittedAt).toLocaleString(undefined, { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })))}
+    </dl>
+    ${match ? `<div class="conn-state" style="margin:4px 0 12px">This looks like <b>${esc(match.name)}</b>${match.archived ? ' (archived)' : ''}, already in your clients.</div>` : ''}
+    <div class="undo-opts">
+      ${match ? `<button type="button" class="undo-opt" data-q-act="existing"><b>Add to ${esc(match.name)}</b><span>Logs the request in their history${match.archived ? ', reactivates them,' : ''} and adds a to-do for today</span></button>` : ''}
+      <button type="button" class="undo-opt" data-q-act="new"><b>Add as new client</b><span>Creates the client, logs the request and adds a to-do for today</span></button>
+      <button type="button" class="undo-opt" data-q-act="dismiss"><b>Dismiss</b><span>Spam or not a real request</span></button>
+    </div>`;
+  openSheet(shell('Quote request', body, null), () => {}, d => d.querySelectorAll('[data-q-act]').forEach(b => b.addEventListener('click', () => {
+    d.close();
+    handleQuote(q, b.dataset.qAct, match);
+  })));
+}
+
+function handleQuote(q, how, match) {
+  const t = nowIso();
+  if (how === 'dismiss') {
+    draft.quoteStatus[q.id] = { status: 'dismissed', issue: q.issue, name: q.name, updatedAt: t };
+    change('q:' + q.id, `Dismissed quote request from ${q.name}`);
+    return;
+  }
+  let c = how === 'existing' && match ? byId(match.id) : null;
+  if (!c) {
+    c = { id: uid(), name: q.name, business: '', phone: q.phone, email: q.email, address: q.address, type: 'Homebuyer', source: 'Website',
+      referredBy: '', notes: '', stages: { 1: today() }, nextFollowUp: '', followUpNote: '', archived: false, createdAt: t, updatedAt: t, activities: [] };
+    draft.clients.push(c);
+  } else if (c.archived) { c.archived = false; c.archivedAt = ''; }
+  if (!c.stages[1]) c.stages[1] = today();
+  const details = [q.service && `Service: ${q.service}`, q.address && `Property: ${q.address}`, q.timeline && `Timeline: ${q.timeline}`, q.message].filter(Boolean).join('\n');
+  addEntry(c, { type: 'quote', title: 'Quote requested on website', date: dayOf(q.submittedAt), note: details });
+  c.nextFollowUp = today(); c.followUpNote = 'Respond to quote request';
+  draft.tasks.push({ id: uid(), kind: 'task', text: `Send quote to ${q.name}${q.service ? ` (${q.service})` : ''}`, due: today(), clientId: c.id, done: false, createdAt: t, updatedAt: t });
+  draft.quoteStatus[q.id] = { status: 'added', clientId: c.id, issue: q.issue, name: q.name, updatedAt: t };
+  touch(c);
+  location.hash = '#client/' + c.id;
+  change('q:' + q.id, `Added quote request from ${q.name} ${how === 'existing' ? 'to their client page' : 'as a new client'}`);
+  toast('Added — tap Save changes when you’re done');
 }
 
 /* ---------- Clients ---------- */
@@ -967,6 +1117,7 @@ document.addEventListener('toggle', e => {
   const d = e.target;
   if (d.classList?.contains('ev') && d.open) loadCommitFiles(d.dataset.sha);
   if (d.classList?.contains('notes')) ui.notesOpen[d.dataset.id] = d.open; // stay open across redraws
+  if (d.classList?.contains('set')) ui.setOpen[d.dataset.set] = d.open;
 }, true);
 
 /* ---------- Settings ---------- */
@@ -977,38 +1128,54 @@ function viewSettings() {
   const exampleCount = clients().filter(c => c.example).length + draft.tasks.filter(t => alive(t) && t.example).length + draft.wins.filter(w => alive(w) && w.example).length;
   const conn = !hasToken() ? `<div class="conn-state">View only on this device. You can look at everything; add a token to save changes.</div>`
     : pull.error ? `<div class="conn-state err">${esc(pull.error)}</div>`
-      : `<div class="conn-state ok">Connected to ${esc(cfg.owner)}/${esc(cfg.repo)}${lastPull ? ` · checked ${esc(timeAgo(lastPull))}` : ''}</div>`;
+      : `<div class="conn-state ok">Connected to ${esc(cfg.owner)}/${esc(cfg.repo)}${lastPull ? ` · synced ${esc(timeAgo(lastPull))}` : ''}</div>`;
+  const qState = !hasToken() ? `<div class="conn-state">Add your GitHub token above first.</div>`
+    : quotes.setup ? `<div class="conn-state err">Can’t read ${esc(cfg.owner)}/${esc(cfg.quotesRepo)} yet. Create the repo and give your token access (steps above).</div>`
+      : quotes.error ? `<div class="conn-state err">${esc(quotes.error)}</div>`
+        : `<div class="conn-state ok">Connected · ${quotes.list.length} open ${quotes.list.length === 1 ? 'request' : 'requests'}</div>`;
+  const order = dashOrder();
+  const dashRows = order.map((id, i) => {
+    const label = DASH_SECTIONS.find(d => d[0] === id)[1];
+    return `<li class="dash-row"><label class="dash-toggle"><input type="checkbox" data-action="dash-show" data-id="${id}"${cfg.dash.hidden.includes(id) ? '' : ' checked'}><span>${esc(label)}</span></label>
+      <button class="icon-btn sm" type="button" data-action="dash-move" data-id="${id}" data-d="-1" aria-label="Move ${esc(label)} up"${i === 0 ? ' disabled' : ''}>${icon('up')}</button>
+      <button class="icon-btn sm" type="button" data-action="dash-move" data-id="${id}" data-d="1" aria-label="Move ${esc(label)} down"${i === order.length - 1 ? ' disabled' : ''}>${icon('down')}</button></li>`;
+  }).join('');
+  // Every section starts closed when you open Settings; ones you open stay open while you're here.
+  const sec = (id, title, sub, body) => `<details class="card set" data-set="${id}"${ui.setOpen[id] ? ' open' : ''}>
+      <summary><span><h2>${title}</h2><span class="set-sub">${sub}</span></span>${icon('chevD')}</summary>
+      <div class="set-body">${body}</div></details>`;
 
   return `<div class="page-head"><h1 class="page-title">Settings</h1></div>
   <div class="settings">
-    <section class="card">
-      <h2>Appearance</h2>
-      <p class="desc">Auto switches to dark in the evening. Pick Light or Dark to keep one look all day. This is saved per device.</p>
+    ${sec('look', 'Appearance', 'Light, dark or automatic · this device', `
+      <p class="desc">Auto switches to dark in the evening. Pick Light or Dark to keep one look all day.</p>
       <div class="seg" role="radiogroup" aria-label="Theme">${themeOpt('auto', 'Auto by time')}${themeOpt('light', 'Light')}${themeOpt('dark', 'Dark')}</div>
       <div class="two" style="margin-top:14px" ${cfg.theme !== 'auto' ? 'hidden' : ''}>
         <label class="field"><span>Light from</span><select data-action="light-from">${hours(cfg.lightFrom)}</select></label>
         <label class="field"><span>Dark from</span><select data-action="light-to">${hours(cfg.lightTo)}</select></label>
-      </div>
-    </section>
+      </div>`)}
 
-    <section class="card">
-      <h2>You &amp; your business</h2>
+    ${sec('dash', 'Dashboard', 'Show, hide and reorder sections · this device', `
+      <p class="desc">Changes apply right away, only on this device.</p>
+      <ul class="dash-rows">${dashRows}</ul>
+      <div class="btn-row"><button class="btn sm ghost" type="button" data-action="dash-reset">Reset to default</button></div>`)}
+
+    ${sec('profile', 'You & your business', 'Name, business, website link · this device', `
       <form class="form" data-form="profile">
         <div class="two">
           <label class="field"><span>Your first name</span><input name="name" value="${esc(cfg.name)}"></label>
           <label class="field"><span>Business name</span><input name="business" value="${esc(cfg.business)}" placeholder="Shown on the dashboard"></label>
         </div>
+        <label class="field"><span>Website link</span><input name="websiteUrl" type="url" value="${esc(cfg.websiteUrl)}" placeholder="https://…" autocapitalize="off" spellcheck="false"><span class="hint">Shown under the header on your dashboard.</span></label>
         <div><button class="btn sm" type="submit">Save</button></div>
-      </form>
-    </section>
+      </form>`)}
 
-    <section class="card">
-      <h2>Saving to GitHub</h2>
+    ${sec('sync', 'Saving to GitHub', hasToken() ? 'Token added on this device' : 'Add a token to save from this device', `
       <p class="desc">Your edits stay on this device until you tap <b>Save changes</b>. Saving needs a GitHub token — paste it once on each device.</p>
       <ol class="steps">
         <li>Open <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">GitHub → New fine-grained token</a>.</li>
-        <li>Repository access: <b>Only select repositories</b> → <b>${esc(cfg.repo)}</b>.</li>
-        <li>Permissions → Repository → <b>Contents: Read and write</b>. Generate, then paste it below.</li>
+        <li>Repository access: <b>Only select repositories</b> → <b>${esc(cfg.repo)}</b> and <b>${esc(cfg.quotesRepo)}</b>.</li>
+        <li>Permissions: <b>Contents: Read and write</b> and <b>Issues: Read and write</b>. Generate, then paste it below.</li>
       </ol>
       <form class="form" data-form="sync" autocomplete="off">
         <label class="field"><span>GitHub token</span><input name="token" type="password" value="${esc(cfg.token)}" placeholder="github_pat_…" autocapitalize="off" spellcheck="false"></label>
@@ -1023,30 +1190,36 @@ function viewSettings() {
         <div class="btn-row" style="margin-top:0"><button class="btn primary sm" type="submit">Save settings</button>
           ${hasToken() ? '<button class="btn sm" type="button" data-action="forget-token">Remove token from this device</button>' : ''}</div>
       </form>
-      ${conn}
-    </section>
+      ${conn}`)}
 
-    <section class="card">
-      <h2>Import &amp; export</h2>
+    ${sec('quotes', 'Quote requests', 'Requests from your website', `
+      <p class="desc">Quote requests from your website arrive as issues in the private <b>${esc(cfg.quotesRepo)}</b> repo and show at the top of your dashboard. GitHub’s app will also notify you about each one.</p>
+      <ol class="steps">
+        <li><a href="https://github.com/new" target="_blank" rel="noopener">Create a repo</a> named <b>${esc(cfg.quotesRepo)}</b>, set to <b>Private</b>.</li>
+        <li>Edit your token so it includes that repo with <b>Issues: Read and write</b>.</li>
+        <li>Set up the website’s quote relay — steps are in the website repo’s README.</li>
+      </ol>
+      <form class="form" data-form="quotes" autocomplete="off">
+        <label class="field"><span>Quotes repo</span><input name="quotesRepo" value="${esc(cfg.quotesRepo)}" autocapitalize="off" spellcheck="false"></label>
+        <div><button class="btn sm" type="submit">Save &amp; check</button></div>
+      </form>
+      ${qState}`)}
+
+    ${sec('data', 'Import & export', 'Backups and spreadsheets', `
       <p class="desc">Back up everything as JSON, open your client list in a spreadsheet as CSV, or bring in a CSV (columns like name, business, phone, email, address, notes).</p>
       <div class="btn-row">
         <button class="btn sm" type="button" data-action="export-json">${icon('download')}Export JSON</button>
         <button class="btn sm" type="button" data-action="export-csv">${icon('download')}Export CSV</button>
         <label class="btn sm">${icon('upload')}Import file<input type="file" accept=".json,.csv,text/csv,application/json" data-action="import" hidden></label>
-      </div>
-    </section>
+      </div>`)}
 
-    ${exampleCount ? `<section class="card">
-      <h2>Example data</h2>
-      <p class="desc">${exampleCount} made-up clients, tasks and wins are here so you can see how things look. Remove them when you’re ready to start for real.</p>
-      <button class="btn sm danger" type="button" data-action="clear-examples">${icon('trash')}Remove example data</button>
-    </section>` : ''}
+    ${exampleCount ? sec('examples', 'Example data', `${exampleCount} made-up items`, `
+      <p class="desc">Made-up clients, tasks and wins are here so you can see how things look. Remove them when you’re ready to start for real.</p>
+      <button class="btn sm danger" type="button" data-action="clear-examples">${icon('trash')}Remove example data</button>`) : ''}
 
-    <section class="card">
-      <h2>App icon</h2>
+    ${sec('icon', 'App icon', 'Install on your phone', `
       <p class="desc">Put Lead Book on your Android home screen: open this site in Chrome, tap ⋮, then <b>Add to Home screen</b> or <b>Install app</b>.</p>
-      <img src="icons/icon-192.png" alt="Lead Book app icon" width="64" height="64" style="border-radius:16px">
-    </section>
+      <img src="icons/icon-192.png" alt="Lead Book app icon" width="64" height="64" style="border-radius:16px">`)}
   </div>`;
 }
 
@@ -1460,6 +1633,14 @@ document.addEventListener('click', e => {
   switch (el.dataset.action) {
     case 'fab': route().name === 'clients' ? clientSheet() : addChooser(); break;
     case 'pill': resync(); break;
+    case 'quote': { const q = quotes.list.find(x => x.id === el.dataset.q); if (q) quoteSheet(q); break; }
+    case 'dash-move': {
+      const order = dashOrder(), i = order.indexOf(el.dataset.id), j = i + Number(el.dataset.d);
+      if (j < 0 || j >= order.length) break;
+      [order[i], order[j]] = [order[j], order[i]];
+      cfg.dash.order = order; saveCfg(); render(); break;
+    }
+    case 'dash-reset': cfg.dash = { order: [], hidden: [] }; saveCfg(); render(); toast('Dashboard layout reset'); break;
     case 'undo': undoSheet(); break;
     case 'save': save(); break;
     case 'review': reviewSheet(); break;
@@ -1550,6 +1731,10 @@ document.addEventListener('change', async e => {
   if (el.dataset.edit && el.tagName === 'SELECT') {
     const c = byId(el.dataset.id);
     if (c) { c[el.dataset.edit] = el.value; touch(c); change(`c:${c.id}:${el.dataset.edit}`, `Set ${FIELD_LABELS[el.dataset.edit]} for ${c.name} to ${el.value || 'none'}`, { rerender: false }); }
+  } else if (act === 'dash-show') {
+    const id = el.dataset.id;
+    cfg.dash.hidden = el.checked ? cfg.dash.hidden.filter(x => x !== id) : [...new Set([...cfg.dash.hidden, id])];
+    saveCfg();
   } else if (act === 'theme') { cfg.theme = el.value; saveCfg(); applyTheme(); render(); }
   else if (act === 'light-from') { cfg.lightFrom = Number(el.value); saveCfg(); applyTheme(); }
   else if (act === 'light-to') { cfg.lightTo = Number(el.value); saveCfg(); applyTheme(); }
@@ -1577,7 +1762,8 @@ document.addEventListener('submit', e => {
   if (!f) return;
   e.preventDefault();
   const fd = new FormData(f);
-  if (f.dataset.form === 'profile') { cfg.name = fd.get('name').trim(); cfg.business = fd.get('business').trim(); saveCfg(); render(); toast('Saved'); }
+  if (f.dataset.form === 'profile') { cfg.name = fd.get('name').trim(); cfg.business = fd.get('business').trim(); cfg.websiteUrl = fd.get('websiteUrl').trim(); saveCfg(); render(); toast('Saved'); }
+  if (f.dataset.form === 'quotes') { cfg.quotesRepo = fd.get('quotesRepo').trim(); saveCfg(); loadQuotes().then(() => { render(); toast(quotes.setup ? 'Can’t reach that repo yet' : quotes.error || 'Quote requests connected'); }); }
   if (f.dataset.form === 'sync') {
     for (const k of ['owner', 'repo', 'branch', 'path', 'token', 'device']) if (fd.has(k)) cfg[k] = String(fd.get(k) || '').trim();
     saveCfg();
@@ -1586,7 +1772,7 @@ document.addEventListener('submit', e => {
   }
 });
 
-window.addEventListener('hashchange', () => { render(); if (!location.hash.startsWith('#client/') || innerWidth < 900) window.scrollTo(0, 0); });
+window.addEventListener('hashchange', () => { if (route().name === 'settings') ui.setOpen = {}; render(); if (!location.hash.startsWith('#client/') || innerWidth < 900) window.scrollTo(0, 0); });
 window.addEventListener('beforeunload', () => persist(true));
 
 /* ================= Boot ================= */

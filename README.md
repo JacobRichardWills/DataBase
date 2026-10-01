@@ -7,7 +7,11 @@ A client planner for an inspection business, modeled on the Area Book Planner.
   yellow = initial connection · green = service scheduled · blue = service completed · light blue = recurring.
   A red dot means something is due. Tap a client to edit their info, move them along the 4-step progress bar, keep notes, and log texts, calls, visits, emails, quotes and services. Old clients live in the Archive and can be reactivated.
 - **History** — the repo's commit log: every save from the app (with which device) and every change Claude makes. Tap an entry to see the details and files changed.
-- **Settings** — theme (auto by time, light or dark), your name and business, the GitHub token, import/export, and a button to remove the example data.
+- **Settings** — every section folds closed. Theme, dashboard layout (show/hide/reorder sections), name/business/website link — those are per device. Plus the GitHub token, quote requests, import/export and removing example data.
+
+## Quote requests from the website
+
+The `website` repo's form sends requests through a small relay to issues labelled `quote` in the private `quotes` repo (setup steps are in that repo's README). Lead Book shows open ones at the top of the dashboard. **Add as new client** (or **Add to** a matching existing client) creates the client, logs the request in their history and adds a to-do for today; **Dismiss** is for spam. Once you save, the issue is closed. Your Lead Book token needs the `quotes` repo with **Issues: Read and write**.
 
 ## How saving works
 

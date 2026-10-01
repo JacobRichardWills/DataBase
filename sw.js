@@ -1,5 +1,5 @@
 // Offline shell for Lead Book. Contacts themselves are kept in localStorage and synced by app.js.
-const CACHE = 'leadbook-v3';
+const CACHE = 'leadbook-v4';
 const SHELL = ['./', 'index.html', 'styles.css', 'app.js', 'manifest.webmanifest',
   'icons/favicon.svg', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/maskable-512.png'];
 
