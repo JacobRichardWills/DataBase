@@ -1,5 +1,5 @@
 // Offline shell for Lead Book. Contacts themselves are kept in localStorage and synced by app.js.
-const CACHE = 'leadbook-v4';
+const CACHE = 'leadbook-v5';
 const SHELL = ['./', 'index.html', 'styles.css', 'app.js', 'manifest.webmanifest',
   'icons/favicon.svg', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/maskable-512.png'];
 
@@ -16,7 +16,7 @@ self.addEventListener('fetch', e => {
   // Network first so updates show up right away; fall back to cache when offline.
   e.respondWith(
     fetch(e.request).then(res => {
-      if (res.ok && (url.origin === location.origin || url.hostname.endsWith('gstatic.com') || url.hostname.endsWith('googleapis.com'))) {
+      if (res.ok && (url.origin === location.origin || url.hostname.endsWith('gstatic.com') || url.hostname.endsWith('googleapis.com') || url.hostname === 'cdnjs.cloudflare.com')) {
         const copy = res.clone();
         caches.open(CACHE).then(c => c.put(e.request, copy));
       }

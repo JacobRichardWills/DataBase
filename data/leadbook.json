@@ -23,7 +23,7 @@
    "archivedAt": "2026-09-10T15:00:00.000Z",
    "createdAt": "2026-07-12T15:00:00.000Z",
    "example": true,
-   "updatedAt": "2026-09-29T15:00:00.000Z",
+   "updatedAt": "2026-10-02T05:00:00.000Z",
    "activities": [
     {
      "id": "ex-a40",
@@ -64,7 +64,8 @@
      "createdAt": "2026-07-19T15:00:00.000Z",
      "updatedAt": "2026-07-19T15:00:00.000Z"
     }
-   ]
+   ],
+   "deleted": true
   },
   {
    "id": "ex-c10",
@@ -89,7 +90,7 @@
    "archivedAt": "",
    "createdAt": "2026-07-22T15:00:00.000Z",
    "example": true,
-   "updatedAt": "2026-09-30T23:15:01.090Z",
+   "updatedAt": "2026-10-02T05:00:00.000Z",
    "activities": [
     {
      "id": "ex-a31",
@@ -149,7 +150,8 @@
      "createdAt": "2026-08-31T15:00:00.000Z",
      "updatedAt": "2026-08-31T15:00:00.000Z"
     }
-   ]
+   ],
+   "deleted": true
   },
   {
    "id": "ex-c14",
@@ -171,7 +173,7 @@
    "archivedAt": "2026-09-10T15:00:00.000Z",
    "createdAt": "2026-08-11T15:00:00.000Z",
    "example": true,
-   "updatedAt": "2026-09-29T15:00:00.000Z",
+   "updatedAt": "2026-10-02T05:00:00.000Z",
    "activities": [
     {
      "id": "ex-a43",
@@ -192,7 +194,8 @@
      "createdAt": "2026-08-11T15:00:00.000Z",
      "updatedAt": "2026-08-11T15:00:00.000Z"
     }
-   ]
+   ],
+   "deleted": true
   },
   {
    "id": "ex-c9",
@@ -216,7 +219,7 @@
    "archivedAt": "",
    "createdAt": "2026-08-21T15:00:00.000Z",
    "example": true,
-   "updatedAt": "2026-09-29T15:00:00.000Z",
+   "updatedAt": "2026-10-02T05:00:00.000Z",
    "activities": [
     {
      "id": "ex-a26",
@@ -266,7 +269,8 @@
      "createdAt": "2026-08-29T15:00:00.000Z",
      "updatedAt": "2026-08-29T15:00:00.000Z"
     }
-   ]
+   ],
+   "deleted": true
   },
   {
    "id": "ex-c6",
@@ -290,7 +294,7 @@
    "archivedAt": "",
    "createdAt": "2026-08-31T15:00:00.000Z",
    "example": true,
-   "updatedAt": "2026-09-29T15:00:00.000Z",
+   "updatedAt": "2026-10-02T05:00:00.000Z",
    "activities": [
     {
      "id": "ex-a17",
@@ -340,7 +344,8 @@
      "createdAt": "2026-09-13T15:00:00.000Z",
      "updatedAt": "2026-09-13T15:00:00.000Z"
     }
-   ]
+   ],
+   "deleted": true
   },
   {
    "id": "ex-c8",
@@ -362,7 +367,7 @@
    "archivedAt": "",
    "createdAt": "2026-09-15T15:00:00.000Z",
    "example": true,
-   "updatedAt": "2026-09-29T15:00:00.000Z",
+   "updatedAt": "2026-10-02T05:00:00.000Z",
    "activities": [
     {
      "id": "ex-a22",
@@ -383,7 +388,8 @@
      "createdAt": "2026-09-15T15:00:00.000Z",
      "updatedAt": "2026-09-15T15:00:00.000Z"
     }
-   ]
+   ],
+   "deleted": true
   },
   {
    "id": "ex-c1",
@@ -405,7 +411,7 @@
    "archivedAt": "",
    "createdAt": "2026-09-18T15:00:00.000Z",
    "example": true,
-   "updatedAt": "2026-09-29T15:00:00.000Z",
+   "updatedAt": "2026-10-02T05:00:00.000Z",
    "activities": [
     {
      "id": "ex-a1",
@@ -444,7 +450,8 @@
      "createdAt": "2026-09-25T15:00:00.000Z",
      "updatedAt": "2026-09-25T15:00:00.000Z"
     }
-   ]
+   ],
+   "deleted": true
   },
   {
    "id": "ex-c12",
@@ -466,7 +473,7 @@
    "archivedAt": "",
    "createdAt": "2026-09-21T15:00:00.000Z",
    "example": true,
-   "updatedAt": "2026-09-29T15:00:00.000Z",
+   "updatedAt": "2026-10-02T05:00:00.000Z",
    "activities": [
     {
      "id": "ex-a37",
@@ -487,7 +494,8 @@
      "createdAt": "2026-09-21T15:00:00.000Z",
      "updatedAt": "2026-09-21T15:00:00.000Z"
     }
-   ]
+   ],
+   "deleted": true
   },
   {
    "id": "ex-c5",
@@ -509,7 +517,7 @@
    "archivedAt": "",
    "createdAt": "2026-09-22T15:00:00.000Z",
    "example": true,
-   "updatedAt": "2026-09-29T15:00:00.000Z",
+   "updatedAt": "2026-10-02T05:00:00.000Z",
    "activities": [
     {
      "id": "ex-a13",
@@ -530,7 +538,8 @@
      "createdAt": "2026-09-22T15:00:00.000Z",
      "updatedAt": "2026-09-22T15:00:00.000Z"
     }
-   ]
+   ],
+   "deleted": true
   },
   {
    "id": "ex-c2",
@@ -553,7 +562,7 @@
    "archivedAt": "",
    "createdAt": "2026-09-24T15:00:00.000Z",
    "example": true,
-   "updatedAt": "2026-09-29T15:00:00.000Z",
+   "updatedAt": "2026-10-02T05:00:00.000Z",
    "activities": [
     {
      "id": "ex-a5",
@@ -602,7 +611,8 @@
      "createdAt": "2026-09-28T15:00:00.000Z",
      "updatedAt": "2026-09-28T15:00:00.000Z"
     }
-   ]
+   ],
+   "deleted": true
   },
   {
    "id": "ex-c7",
@@ -624,7 +634,7 @@
    "archivedAt": "",
    "createdAt": "2026-09-26T15:00:00.000Z",
    "example": true,
-   "updatedAt": "2026-09-30T23:31:09.661Z",
+   "updatedAt": "2026-10-02T05:00:00.000Z",
    "activities": [
     {
      "id": "ex-a20",
@@ -645,7 +655,8 @@
      "createdAt": "2026-09-26T15:00:00.000Z",
      "updatedAt": "2026-09-26T15:00:00.000Z"
     }
-   ]
+   ],
+   "deleted": true
   },
   {
    "id": "ex-c11",
@@ -667,7 +678,7 @@
    "archivedAt": "",
    "createdAt": "2026-09-27T15:00:00.000Z",
    "example": true,
-   "updatedAt": "2026-09-29T15:00:00.000Z",
+   "updatedAt": "2026-10-02T05:00:00.000Z",
    "activities": [
     {
      "id": "ex-a35",
@@ -688,7 +699,8 @@
      "createdAt": "2026-09-27T15:00:00.000Z",
      "updatedAt": "2026-09-27T15:00:00.000Z"
     }
-   ]
+   ],
+   "deleted": true
   },
   {
    "id": "ex-c3",
@@ -710,7 +722,7 @@
    "archivedAt": "",
    "createdAt": "2026-09-29T15:00:00.000Z",
    "example": true,
-   "updatedAt": "2026-09-29T15:00:00.000Z",
+   "updatedAt": "2026-10-02T05:00:00.000Z",
    "activities": [
     {
      "id": "ex-a10",
@@ -731,7 +743,8 @@
      "createdAt": "2026-09-29T15:00:00.000Z",
      "updatedAt": "2026-09-29T15:00:00.000Z"
     }
-   ]
+   ],
+   "deleted": true
   },
   {
    "id": "ex-c4",
@@ -753,7 +766,7 @@
    "archivedAt": "",
    "createdAt": "2026-09-30T15:00:00.000Z",
    "example": true,
-   "updatedAt": "2026-09-30T15:00:00.000Z",
+   "updatedAt": "2026-10-02T05:00:00.000Z",
    "activities": [
     {
      "id": "ex-a12",
@@ -765,7 +778,758 @@
      "createdAt": "2026-09-30T15:00:00.000Z",
      "updatedAt": "2026-09-30T15:00:00.000Z"
     }
+   ],
+   "deleted": true
+  },
+  {
+   "id": "ex2-c1",
+   "name": "Maria Lopez",
+   "business": "Taqueria El Sol",
+   "type": "Restaurant / food service",
+   "phone": "801-555-0142",
+   "email": "",
+   "address": "7215 S Redwood Rd, West Jordan, UT",
+   "source": "Walk-in / door to door",
+   "referredBy": "",
+   "notes": "Best time: 2–4pm between lunch and dinner rush.",
+   "stages": {
+    "1": "2026-09-22"
+   },
+   "nextFollowUp": "2026-09-29",
+   "followUpNote": "Drop off extinguisher quote",
+   "archived": false,
+   "archivedAt": "",
+   "createdAt": "2026-09-22T16:00:00.000Z",
+   "updatedAt": "2026-10-02T05:00:00.000Z",
+   "example": true,
+   "activities": [
+    {
+     "id": "ex2-a1",
+     "type": "in_person",
+     "title": "Walked in, met the owner",
+     "date": "2026-09-22",
+     "note": "6 extinguishers incl. a K-class in the kitchen. Last tagged 14 months ago.",
+     "createdAt": "2026-09-22T16:00:00.000Z",
+     "updatedAt": "2026-09-22T16:00:00.000Z"
+    },
+    {
+     "id": "ex2-a2",
+     "type": "quote",
+     "title": "Sent a quote",
+     "date": "2026-09-26",
+     "note": "Annual inspection + tagging, 6 units.",
+     "createdAt": "2026-09-26T16:00:00.000Z",
+     "updatedAt": "2026-09-26T16:00:00.000Z"
+    },
+    {
+     "id": "ex2-a3",
+     "type": "stage",
+     "stage": 1,
+     "title": "Initial connection",
+     "date": "2026-09-22",
+     "note": "",
+     "createdAt": "2026-09-22T16:00:00.000Z",
+     "updatedAt": "2026-09-22T16:00:00.000Z"
+    }
+   ],
+   "lat": 40.6216,
+   "lng": -111.9389,
+   "geoAddr": "7215 S Redwood Rd, West Jordan, UT"
+  },
+  {
+   "id": "ex2-c2",
+   "name": "Dan Whitney",
+   "business": "Riverton Self Storage",
+   "type": "Industrial / warehouse",
+   "phone": "385-555-0199",
+   "email": "dan@example.com",
+   "address": "12600 S Redwood Rd, Riverton, UT",
+   "source": "Cold call",
+   "referredBy": "",
+   "notes": "",
+   "stages": {
+    "1": "2026-09-24",
+    "2": "2026-09-29"
+   },
+   "nextFollowUp": "2026-10-01",
+   "followUpNote": "Confirm Thursday 8am + gate code",
+   "archived": false,
+   "archivedAt": "",
+   "createdAt": "2026-09-24T16:00:00.000Z",
+   "updatedAt": "2026-10-02T05:00:00.000Z",
+   "example": true,
+   "activities": [
+    {
+     "id": "ex2-a4",
+     "type": "call",
+     "title": "Phone call",
+     "date": "2026-09-24",
+     "note": "12 extinguishers across 3 buildings + 1 backflow on the irrigation line.",
+     "createdAt": "2026-09-24T16:00:00.000Z",
+     "updatedAt": "2026-09-24T16:00:00.000Z"
+    },
+    {
+     "id": "ex2-a5",
+     "type": "quote",
+     "title": "Sent a quote",
+     "date": "2026-09-25",
+     "note": "12 extinguishers + 1 backflow test.",
+     "createdAt": "2026-09-25T16:00:00.000Z",
+     "updatedAt": "2026-09-25T16:00:00.000Z"
+    },
+    {
+     "id": "ex2-a6",
+     "type": "text",
+     "title": "Text sent",
+     "date": "2026-09-29",
+     "note": "Booked Thursday 8am.",
+     "createdAt": "2026-09-29T16:00:00.000Z",
+     "updatedAt": "2026-09-29T16:00:00.000Z"
+    },
+    {
+     "id": "ex2-a7",
+     "type": "stage",
+     "stage": 1,
+     "title": "Initial connection",
+     "date": "2026-09-24",
+     "note": "",
+     "createdAt": "2026-09-24T16:00:00.000Z",
+     "updatedAt": "2026-09-24T16:00:00.000Z"
+    },
+    {
+     "id": "ex2-a8",
+     "type": "stage",
+     "stage": 2,
+     "title": "Service scheduled",
+     "date": "2026-09-29",
+     "note": "",
+     "createdAt": "2026-09-29T16:00:00.000Z",
+     "updatedAt": "2026-09-29T16:00:00.000Z"
+    }
+   ],
+   "lat": 40.5206,
+   "lng": -111.9381,
+   "geoAddr": "12600 S Redwood Rd, Riverton, UT"
+  },
+  {
+   "id": "ex2-c3",
+   "name": "Karen Fisher",
+   "business": "Sunrise Senior Living",
+   "type": "Medical / care facility",
+   "phone": "",
+   "email": "kfisher@example.com",
+   "address": "1250 W 9000 S, West Jordan, UT",
+   "source": "Networking event",
+   "referredBy": "",
+   "notes": "",
+   "stages": {
+    "1": "2026-09-28"
+   },
+   "nextFollowUp": "2026-10-02",
+   "followUpNote": "Call facilities manager back",
+   "archived": false,
+   "archivedAt": "",
+   "createdAt": "2026-09-28T16:00:00.000Z",
+   "updatedAt": "2026-10-02T05:00:00.000Z",
+   "example": true,
+   "activities": [
+    {
+     "id": "ex2-a9",
+     "type": "email",
+     "title": "Email sent",
+     "date": "2026-09-28",
+     "note": "Intro + one-page overview. Their contract with current vendor ends in December.",
+     "createdAt": "2026-09-28T16:00:00.000Z",
+     "updatedAt": "2026-09-28T16:00:00.000Z"
+    },
+    {
+     "id": "ex2-a10",
+     "type": "stage",
+     "stage": 1,
+     "title": "Initial connection",
+     "date": "2026-09-28",
+     "note": "",
+     "createdAt": "2026-09-28T16:00:00.000Z",
+     "updatedAt": "2026-09-28T16:00:00.000Z"
+    }
+   ],
+   "lat": 40.5895,
+   "lng": -111.9285,
+   "geoAddr": "1250 W 9000 S, West Jordan, UT"
+  },
+  {
+   "id": "ex2-c4",
+   "name": "Greg Olsen",
+   "business": "Jordan Valley Community Church",
+   "type": "Church / school",
+   "phone": "801-555-0177",
+   "email": "",
+   "address": "8600 S 2700 W, West Jordan, UT",
+   "source": "Referral",
+   "referredBy": "Tom Hadley",
+   "notes": "Facilities volunteer — call evenings.",
+   "stages": {
+    "1": "2026-09-19"
+   },
+   "nextFollowUp": "",
+   "followUpNote": "",
+   "archived": false,
+   "archivedAt": "",
+   "createdAt": "2026-09-19T16:00:00.000Z",
+   "updatedAt": "2026-10-02T05:00:00.000Z",
+   "example": true,
+   "activities": [
+    {
+     "id": "ex2-a11",
+     "type": "in_person",
+     "title": "Met in person",
+     "date": "2026-09-19",
+     "note": "Backflow tester retired; needs someone for spring. 2 assemblies.",
+     "createdAt": "2026-09-19T16:00:00.000Z",
+     "updatedAt": "2026-09-19T16:00:00.000Z"
+    },
+    {
+     "id": "ex2-a12",
+     "type": "stage",
+     "stage": 1,
+     "title": "Initial connection",
+     "date": "2026-09-19",
+     "note": "",
+     "createdAt": "2026-09-19T16:00:00.000Z",
+     "updatedAt": "2026-09-19T16:00:00.000Z"
+    }
+   ],
+   "lat": 40.5969,
+   "lng": -111.9565,
+   "geoAddr": "8600 S 2700 W, West Jordan, UT"
+  },
+  {
+   "id": "ex2-c5",
+   "name": "Priya Shah",
+   "business": "Wasatch Property Group",
+   "type": "Property manager",
+   "phone": "801-555-0110",
+   "email": "priya@example.com",
+   "address": "4700 S 900 E, Murray, UT",
+   "source": "Networking event",
+   "referredBy": "",
+   "notes": "",
+   "stages": {
+    "1": "2026-09-23"
+   },
+   "nextFollowUp": "2026-10-04",
+   "followUpNote": "Send multi-site pricing (4 buildings)",
+   "archived": false,
+   "archivedAt": "",
+   "createdAt": "2026-09-23T16:00:00.000Z",
+   "updatedAt": "2026-10-02T05:00:00.000Z",
+   "example": true,
+   "activities": [
+    {
+     "id": "ex2-a13",
+     "type": "in_person",
+     "title": "Met in person",
+     "date": "2026-09-23",
+     "note": "Manages 4 office buildings. Wants one vendor for extinguishers + backflow.",
+     "createdAt": "2026-09-23T16:00:00.000Z",
+     "updatedAt": "2026-09-23T16:00:00.000Z"
+    },
+    {
+     "id": "ex2-a14",
+     "type": "stage",
+     "stage": 1,
+     "title": "Initial connection",
+     "date": "2026-09-23",
+     "note": "",
+     "createdAt": "2026-09-23T16:00:00.000Z",
+     "updatedAt": "2026-09-23T16:00:00.000Z"
+    }
+   ],
+   "lat": 40.6681,
+   "lng": -111.8649,
+   "geoAddr": "4700 S 900 E, Murray, UT"
+  },
+  {
+   "id": "ex2-c6",
+   "name": "Mike Brennan",
+   "business": "Brennan Auto Repair",
+   "type": "Industrial / warehouse",
+   "phone": "801-555-0163",
+   "email": "mike@example.com",
+   "address": "3900 W 5400 S, Kearns, UT",
+   "source": "Walk-in / door to door",
+   "referredBy": "",
+   "notes": "Next annual due in September.",
+   "stages": {
+    "1": "2026-09-01",
+    "2": "2026-09-10",
+    "3": "2026-09-13"
+   },
+   "nextFollowUp": "2026-09-30",
+   "followUpNote": "Ask for a Google review + referrals",
+   "archived": false,
+   "archivedAt": "",
+   "createdAt": "2026-09-01T16:00:00.000Z",
+   "updatedAt": "2026-10-02T05:00:00.000Z",
+   "example": true,
+   "activities": [
+    {
+     "id": "ex2-a15",
+     "type": "service",
+     "title": "Annual inspection",
+     "date": "2026-09-13",
+     "note": "8 extinguishers inspected and tagged, 2 recharged.",
+     "createdAt": "2026-09-13T16:00:00.000Z",
+     "updatedAt": "2026-09-13T16:00:00.000Z"
+    },
+    {
+     "id": "ex2-a16",
+     "type": "text",
+     "title": "Text sent",
+     "date": "2026-09-14",
+     "note": "Sent the inspection report.",
+     "createdAt": "2026-09-14T16:00:00.000Z",
+     "updatedAt": "2026-09-14T16:00:00.000Z"
+    },
+    {
+     "id": "ex2-a17",
+     "type": "stage",
+     "stage": 1,
+     "title": "Initial connection",
+     "date": "2026-09-01",
+     "note": "",
+     "createdAt": "2026-09-01T16:00:00.000Z",
+     "updatedAt": "2026-09-01T16:00:00.000Z"
+    },
+    {
+     "id": "ex2-a18",
+     "type": "stage",
+     "stage": 2,
+     "title": "Service scheduled",
+     "date": "2026-09-10",
+     "note": "",
+     "createdAt": "2026-09-10T16:00:00.000Z",
+     "updatedAt": "2026-09-10T16:00:00.000Z"
+    },
+    {
+     "id": "ex2-a19",
+     "type": "stage",
+     "stage": 3,
+     "title": "Service completed",
+     "date": "2026-09-13",
+     "note": "",
+     "createdAt": "2026-09-13T16:00:00.000Z",
+     "updatedAt": "2026-09-13T16:00:00.000Z"
+    }
+   ],
+   "lat": 40.6545,
+   "lng": -111.979,
+   "geoAddr": "3900 W 5400 S, Kearns, UT"
+  },
+  {
+   "id": "ex2-c7",
+   "name": "Lisa Tran",
+   "business": "Pho Saigon Kitchen",
+   "type": "Restaurant / food service",
+   "phone": "385-555-0121",
+   "email": "",
+   "address": "7800 S 1300 W, West Jordan, UT",
+   "source": "Walk-in / door to door",
+   "referredBy": "",
+   "notes": "",
+   "stages": {
+    "1": "2026-09-27"
+   },
+   "nextFollowUp": "2026-10-06",
+   "followUpNote": "Check back after remodel",
+   "archived": false,
+   "archivedAt": "",
+   "createdAt": "2026-09-27T16:00:00.000Z",
+   "updatedAt": "2026-10-02T05:00:00.000Z",
+   "example": true,
+   "activities": [
+    {
+     "id": "ex2-a20",
+     "type": "in_person",
+     "title": "Walked in",
+     "date": "2026-09-27",
+     "note": "Remodeling kitchen until mid-October.",
+     "createdAt": "2026-09-27T16:00:00.000Z",
+     "updatedAt": "2026-09-27T16:00:00.000Z"
+    },
+    {
+     "id": "ex2-a21",
+     "type": "stage",
+     "stage": 1,
+     "title": "Initial connection",
+     "date": "2026-09-27",
+     "note": "",
+     "createdAt": "2026-09-27T16:00:00.000Z",
+     "updatedAt": "2026-09-27T16:00:00.000Z"
+    }
+   ],
+   "lat": 40.6103,
+   "lng": -111.9289,
+   "geoAddr": "7800 S 1300 W, West Jordan, UT"
+  },
+  {
+   "id": "ex2-c8",
+   "name": "Tom Hadley",
+   "business": "Hadley Plumbing",
+   "type": "Contractor / partner",
+   "phone": "801-555-0188",
+   "email": "",
+   "address": "1820 W 9000 S, West Jordan, UT",
+   "source": "Networking event",
+   "referredBy": "",
+   "notes": "Referral partner — send him a thank-you for Greg.",
+   "stages": {
+    "1": "2026-09-16"
+   },
+   "nextFollowUp": "",
+   "followUpNote": "",
+   "archived": false,
+   "archivedAt": "",
+   "createdAt": "2026-09-16T16:00:00.000Z",
+   "updatedAt": "2026-10-02T05:00:00.000Z",
+   "example": true,
+   "activities": [
+    {
+     "id": "ex2-a22",
+     "type": "call",
+     "title": "Phone call",
+     "date": "2026-09-16",
+     "note": "Installs backflow assemblies; happy to refer testing to us.",
+     "createdAt": "2026-09-16T16:00:00.000Z",
+     "updatedAt": "2026-09-16T16:00:00.000Z"
+    },
+    {
+     "id": "ex2-a23",
+     "type": "stage",
+     "stage": 1,
+     "title": "Initial connection",
+     "date": "2026-09-16",
+     "note": "",
+     "createdAt": "2026-09-16T16:00:00.000Z",
+     "updatedAt": "2026-09-16T16:00:00.000Z"
+    }
+   ],
+   "lat": 40.5893,
+   "lng": -111.937,
+   "geoAddr": "1820 W 9000 S, West Jordan, UT"
+  },
+  {
+   "id": "ex2-c9",
+   "name": "Jenny Park",
+   "business": "Oquirrh Dental",
+   "type": "Medical / care facility",
+   "phone": "801-555-0104",
+   "email": "office@example.com",
+   "address": "5400 W 6200 S, Kearns, UT",
+   "source": "Website",
+   "referredBy": "",
+   "notes": "",
+   "stages": {
+    "1": "2026-08-22",
+    "2": "2026-08-27",
+    "3": "2026-08-29"
+   },
+   "nextFollowUp": "",
+   "followUpNote": "",
+   "archived": false,
+   "archivedAt": "",
+   "createdAt": "2026-08-22T16:00:00.000Z",
+   "updatedAt": "2026-10-02T05:00:00.000Z",
+   "example": true,
+   "activities": [
+    {
+     "id": "ex2-a24",
+     "type": "service",
+     "title": "Annual inspection",
+     "date": "2026-08-29",
+     "note": "4 extinguishers inspected, 1 replaced (damaged gauge).",
+     "createdAt": "2026-08-29T16:00:00.000Z",
+     "updatedAt": "2026-08-29T16:00:00.000Z"
+    },
+    {
+     "id": "ex2-a25",
+     "type": "stage",
+     "stage": 1,
+     "title": "Initial connection",
+     "date": "2026-08-22",
+     "note": "",
+     "createdAt": "2026-08-22T16:00:00.000Z",
+     "updatedAt": "2026-08-22T16:00:00.000Z"
+    },
+    {
+     "id": "ex2-a26",
+     "type": "stage",
+     "stage": 2,
+     "title": "Service scheduled",
+     "date": "2026-08-27",
+     "note": "",
+     "createdAt": "2026-08-27T16:00:00.000Z",
+     "updatedAt": "2026-08-27T16:00:00.000Z"
+    },
+    {
+     "id": "ex2-a27",
+     "type": "stage",
+     "stage": 3,
+     "title": "Service completed",
+     "date": "2026-08-29",
+     "note": "",
+     "createdAt": "2026-08-29T16:00:00.000Z",
+     "updatedAt": "2026-08-29T16:00:00.000Z"
+    }
+   ],
+   "lat": 40.6384,
+   "lng": -112.0068,
+   "geoAddr": "5400 W 6200 S, Kearns, UT"
+  },
+  {
+   "id": "ex2-c10",
+   "name": "Steve Ramirez",
+   "business": "Canyon View HOA",
+   "type": "HOA / apartments",
+   "phone": "801-555-0150",
+   "email": "board@example.com",
+   "address": "11400 S 4000 W, South Jordan, UT",
+   "source": "Referral",
+   "referredBy": "",
+   "notes": "Recurring: extinguishers every fall, backflow every spring. Invoice net-15.",
+   "stages": {
+    "1": "2026-07-23",
+    "2": "2026-07-31",
+    "3": "2026-08-02",
+    "4": "2026-09-01"
+   },
+   "nextFollowUp": "2026-10-11",
+   "followUpNote": "Spring backflow tests — 6 assemblies",
+   "archived": false,
+   "archivedAt": "",
+   "createdAt": "2026-07-23T16:00:00.000Z",
+   "updatedAt": "2026-10-02T05:00:00.000Z",
+   "example": true,
+   "activities": [
+    {
+     "id": "ex2-a28",
+     "type": "service",
+     "title": "Backflow testing",
+     "date": "2026-08-02",
+     "note": "6 assemblies tested, all passed.",
+     "createdAt": "2026-08-02T16:00:00.000Z",
+     "updatedAt": "2026-08-02T16:00:00.000Z"
+    },
+    {
+     "id": "ex2-a29",
+     "type": "service",
+     "title": "Annual inspection",
+     "date": "2026-09-01",
+     "note": "22 extinguishers in clubhouse + 4 buildings.",
+     "createdAt": "2026-09-01T16:00:00.000Z",
+     "updatedAt": "2026-09-01T16:00:00.000Z"
+    },
+    {
+     "id": "ex2-a30",
+     "type": "stage",
+     "stage": 1,
+     "title": "Initial connection",
+     "date": "2026-07-23",
+     "note": "",
+     "createdAt": "2026-07-23T16:00:00.000Z",
+     "updatedAt": "2026-07-23T16:00:00.000Z"
+    },
+    {
+     "id": "ex2-a31",
+     "type": "stage",
+     "stage": 2,
+     "title": "Service scheduled",
+     "date": "2026-07-31",
+     "note": "",
+     "createdAt": "2026-07-31T16:00:00.000Z",
+     "updatedAt": "2026-07-31T16:00:00.000Z"
+    },
+    {
+     "id": "ex2-a32",
+     "type": "stage",
+     "stage": 3,
+     "title": "Service completed",
+     "date": "2026-08-02",
+     "note": "",
+     "createdAt": "2026-08-02T16:00:00.000Z",
+     "updatedAt": "2026-08-02T16:00:00.000Z"
+    },
+    {
+     "id": "ex2-a33",
+     "type": "stage",
+     "stage": 4,
+     "title": "Recurring client",
+     "date": "2026-09-01",
+     "note": "",
+     "createdAt": "2026-09-01T16:00:00.000Z",
+     "updatedAt": "2026-09-01T16:00:00.000Z"
+    }
+   ],
+   "lat": 40.542,
+   "lng": -111.985,
+   "geoAddr": "11400 S 4000 W, South Jordan, UT"
+  },
+  {
+   "id": "ex2-c11",
+   "name": "Ryan Cole",
+   "business": "Cole's Gym",
+   "type": "Retail / office",
+   "phone": "385-555-0135",
+   "email": "",
+   "address": "",
+   "source": "Cold call",
+   "referredBy": "",
+   "notes": "",
+   "stages": {
+    "1": "2026-09-28"
+   },
+   "nextFollowUp": "2026-09-30",
+   "followUpNote": "Call back — left voicemail",
+   "archived": false,
+   "archivedAt": "",
+   "createdAt": "2026-09-28T16:00:00.000Z",
+   "updatedAt": "2026-10-02T05:00:00.000Z",
+   "example": true,
+   "activities": [
+    {
+     "id": "ex2-a34",
+     "type": "call",
+     "title": "Left voicemail",
+     "date": "2026-09-28",
+     "note": "",
+     "createdAt": "2026-09-28T16:00:00.000Z",
+     "updatedAt": "2026-09-28T16:00:00.000Z"
+    },
+    {
+     "id": "ex2-a35",
+     "type": "stage",
+     "stage": 1,
+     "title": "Initial connection",
+     "date": "2026-09-28",
+     "note": "",
+     "createdAt": "2026-09-28T16:00:00.000Z",
+     "updatedAt": "2026-09-28T16:00:00.000Z"
+    }
    ]
+  },
+  {
+   "id": "ex2-c12",
+   "name": "Alicia Gomez",
+   "business": "Little Sprouts Daycare",
+   "type": "Church / school",
+   "phone": "",
+   "email": "alicia@example.com",
+   "address": "9100 S Redwood Rd, West Jordan, UT",
+   "source": "Social media",
+   "referredBy": "",
+   "notes": "",
+   "stages": {
+    "1": "2026-09-22"
+   },
+   "nextFollowUp": "2026-10-08",
+   "followUpNote": "Follow up after state licensing visit",
+   "archived": false,
+   "archivedAt": "",
+   "createdAt": "2026-09-22T16:00:00.000Z",
+   "updatedAt": "2026-10-02T05:00:00.000Z",
+   "example": true,
+   "activities": [
+    {
+     "id": "ex2-a36",
+     "type": "email",
+     "title": "Email sent",
+     "date": "2026-09-22",
+     "note": "Their state inspection flagged an expired extinguisher tag.",
+     "createdAt": "2026-09-22T16:00:00.000Z",
+     "updatedAt": "2026-09-22T16:00:00.000Z"
+    },
+    {
+     "id": "ex2-a37",
+     "type": "stage",
+     "stage": 1,
+     "title": "Initial connection",
+     "date": "2026-09-22",
+     "note": "",
+     "createdAt": "2026-09-22T16:00:00.000Z",
+     "updatedAt": "2026-09-22T16:00:00.000Z"
+    }
+   ],
+   "lat": 40.5866,
+   "lng": -111.9386,
+   "geoAddr": "9100 S Redwood Rd, West Jordan, UT"
+  },
+  {
+   "id": "ex2-c13",
+   "name": "Bob Jensen",
+   "business": "Jensen Tire",
+   "type": "Retail / office",
+   "phone": "801-555-0111",
+   "email": "",
+   "address": "3500 S State St, South Salt Lake, UT",
+   "source": "Past client",
+   "referredBy": "",
+   "notes": "",
+   "stages": {
+    "1": "2026-07-13",
+    "2": "2026-07-18",
+    "3": "2026-07-20"
+   },
+   "nextFollowUp": "",
+   "followUpNote": "",
+   "archived": true,
+   "archivedAt": "2026-09-11T16:00:00.000Z",
+   "createdAt": "2026-07-13T16:00:00.000Z",
+   "updatedAt": "2026-10-02T05:00:00.000Z",
+   "example": true,
+   "activities": [
+    {
+     "id": "ex2-a38",
+     "type": "service",
+     "title": "Annual inspection",
+     "date": "2026-07-20",
+     "note": "",
+     "createdAt": "2026-07-20T16:00:00.000Z",
+     "updatedAt": "2026-07-20T16:00:00.000Z"
+    },
+    {
+     "id": "ex2-a39",
+     "type": "stage",
+     "stage": 1,
+     "title": "Initial connection",
+     "date": "2026-07-13",
+     "note": "",
+     "createdAt": "2026-07-13T16:00:00.000Z",
+     "updatedAt": "2026-07-13T16:00:00.000Z"
+    },
+    {
+     "id": "ex2-a40",
+     "type": "stage",
+     "stage": 2,
+     "title": "Service scheduled",
+     "date": "2026-07-18",
+     "note": "",
+     "createdAt": "2026-07-18T16:00:00.000Z",
+     "updatedAt": "2026-07-18T16:00:00.000Z"
+    },
+    {
+     "id": "ex2-a41",
+     "type": "stage",
+     "stage": 3,
+     "title": "Service completed",
+     "date": "2026-07-20",
+     "note": "",
+     "createdAt": "2026-07-20T16:00:00.000Z",
+     "updatedAt": "2026-07-20T16:00:00.000Z"
+    }
+   ],
+   "lat": 40.6964,
+   "lng": -111.8882,
+   "geoAddr": "3500 S State St, South Salt Lake, UT"
   }
  ],
  "tasks": [
@@ -778,7 +1542,8 @@
    "done": false,
    "createdAt": "2026-09-24T15:00:00.000Z",
    "example": true,
-   "updatedAt": "2026-09-24T15:00:00.000Z"
+   "updatedAt": "2026-10-02T05:00:00.000Z",
+   "deleted": true
   },
   {
    "id": "ex-t2",
@@ -789,7 +1554,8 @@
    "done": false,
    "createdAt": "2026-09-25T15:00:00.000Z",
    "example": true,
-   "updatedAt": "2026-09-25T15:00:00.000Z"
+   "updatedAt": "2026-10-02T05:00:00.000Z",
+   "deleted": true
   },
   {
    "id": "ex-t3",
@@ -800,7 +1566,8 @@
    "done": false,
    "createdAt": "2026-09-26T15:00:00.000Z",
    "example": true,
-   "updatedAt": "2026-09-26T15:00:00.000Z"
+   "updatedAt": "2026-10-02T05:00:00.000Z",
+   "deleted": true
   },
   {
    "id": "ex-t4",
@@ -811,7 +1578,8 @@
    "done": false,
    "createdAt": "2026-09-27T15:00:00.000Z",
    "example": true,
-   "updatedAt": "2026-09-27T15:00:00.000Z"
+   "updatedAt": "2026-10-02T05:00:00.000Z",
+   "deleted": true
   },
   {
    "id": "ex-t5",
@@ -823,7 +1591,8 @@
    "doneAt": "2026-09-27T15:00:00.000Z",
    "createdAt": "2026-09-28T15:00:00.000Z",
    "example": true,
-   "updatedAt": "2026-09-28T15:00:00.000Z"
+   "updatedAt": "2026-10-02T05:00:00.000Z",
+   "deleted": true
   },
   {
    "id": "ex-n1",
@@ -832,7 +1601,8 @@
    "color": "yellow",
    "createdAt": "2026-09-29T15:00:00.000Z",
    "example": true,
-   "updatedAt": "2026-09-29T15:00:00.000Z"
+   "updatedAt": "2026-10-02T05:00:00.000Z",
+   "deleted": true
   },
   {
    "id": "ex-n2",
@@ -841,7 +1611,8 @@
    "color": "mint",
    "createdAt": "2026-09-30T15:00:00.000Z",
    "example": true,
-   "updatedAt": "2026-09-30T15:00:00.000Z"
+   "updatedAt": "2026-10-02T05:00:00.000Z",
+   "deleted": true
   },
   {
    "id": "muotscspepc9m",
@@ -861,7 +1632,82 @@
    "color": "sky",
    "createdAt": "2026-10-01T15:00:00.000Z",
    "example": true,
-   "updatedAt": "2026-10-01T15:00:00.000Z"
+   "updatedAt": "2026-10-02T05:00:00.000Z",
+   "deleted": true
+  },
+  {
+   "id": "ex2-t1",
+   "kind": "task",
+   "text": "Order inspection tags and seals",
+   "due": "2026-09-30",
+   "clientId": "",
+   "done": false,
+   "createdAt": "2026-09-25T16:00:00.000Z",
+   "updatedAt": "2026-10-02T05:00:00.000Z",
+   "example": true
+  },
+  {
+   "id": "ex2-t2",
+   "kind": "task",
+   "text": "Print backflow test forms for Riverton Self Storage",
+   "due": "2026-10-01",
+   "clientId": "ex2-c2",
+   "done": false,
+   "createdAt": "2026-09-26T16:00:00.000Z",
+   "updatedAt": "2026-10-02T05:00:00.000Z",
+   "example": true
+  },
+  {
+   "id": "ex2-t3",
+   "kind": "task",
+   "text": "Restock recharge supplies",
+   "due": "2026-10-05",
+   "clientId": "",
+   "done": false,
+   "createdAt": "2026-09-27T16:00:00.000Z",
+   "updatedAt": "2026-10-02T05:00:00.000Z",
+   "example": true
+  },
+  {
+   "id": "ex2-t4",
+   "kind": "task",
+   "text": "Set up Google Business profile",
+   "due": "",
+   "clientId": "",
+   "done": false,
+   "createdAt": "2026-09-28T16:00:00.000Z",
+   "updatedAt": "2026-10-02T05:00:00.000Z",
+   "example": true
+  },
+  {
+   "id": "ex2-t5",
+   "kind": "task",
+   "text": "Buy backflow test kit",
+   "due": "2026-09-28",
+   "clientId": "",
+   "done": true,
+   "doneAt": "2026-09-28T16:00:00.000Z",
+   "createdAt": "2026-09-29T16:00:00.000Z",
+   "updatedAt": "2026-10-02T05:00:00.000Z",
+   "example": true
+  },
+  {
+   "id": "ex2-n1",
+   "kind": "note",
+   "text": "Ask every client:\nWho else on this block needs inspections?",
+   "color": "mint",
+   "createdAt": "2026-09-30T16:00:00.000Z",
+   "updatedAt": "2026-10-02T05:00:00.000Z",
+   "example": true
+  },
+  {
+   "id": "ex2-n2",
+   "kind": "note",
+   "text": "Restaurants on Redwood Rd — walk the strip on Tuesdays 2–4pm",
+   "color": "yellow",
+   "createdAt": "2026-10-01T16:00:00.000Z",
+   "updatedAt": "2026-10-02T05:00:00.000Z",
+   "example": true
   }
  ],
  "wins": [
@@ -872,7 +1718,8 @@
    "date": "2026-08-31",
    "createdAt": "2026-08-31T18:00:00.000Z",
    "example": true,
-   "updatedAt": "2026-08-31T18:00:00.000Z"
+   "updatedAt": "2026-10-02T05:00:00.000Z",
+   "deleted": true
   },
   {
    "id": "ex-w5",
@@ -881,7 +1728,8 @@
    "date": "2026-08-31",
    "createdAt": "2026-08-31T18:00:00.000Z",
    "example": true,
-   "updatedAt": "2026-08-31T18:00:00.000Z"
+   "updatedAt": "2026-10-02T05:00:00.000Z",
+   "deleted": true
   },
   {
    "id": "ex-w1",
@@ -890,7 +1738,8 @@
    "date": "2026-09-09",
    "createdAt": "2026-09-09T18:00:00.000Z",
    "example": true,
-   "updatedAt": "2026-09-09T18:00:00.000Z"
+   "updatedAt": "2026-10-02T05:00:00.000Z",
+   "deleted": true
   },
   {
    "id": "ex-w2",
@@ -899,7 +1748,8 @@
    "date": "2026-09-28",
    "createdAt": "2026-09-28T18:00:00.000Z",
    "example": true,
-   "updatedAt": "2026-09-28T18:00:00.000Z"
+   "updatedAt": "2026-10-02T05:00:00.000Z",
+   "deleted": true
   },
   {
    "id": "ex-w4",
@@ -908,7 +1758,44 @@
    "date": "2026-09-30",
    "createdAt": "2026-09-30T18:00:00.000Z",
    "example": true,
-   "updatedAt": "2026-09-30T18:00:00.000Z"
+   "updatedAt": "2026-10-02T05:00:00.000Z",
+   "deleted": true
+  },
+  {
+   "id": "ex2-w1",
+   "text": "First recurring account — Canyon View HOA signed on for yearly extinguishers + backflow.",
+   "by": "me",
+   "date": "2026-09-01",
+   "createdAt": "2026-09-01T18:00:00.000Z",
+   "updatedAt": "2026-10-02T05:00:00.000Z",
+   "example": true
+  },
+  {
+   "id": "ex2-w2",
+   "text": "Booked Riverton Self Storage: 12 extinguishers and a backflow test in one visit.",
+   "by": "me",
+   "date": "2026-09-29",
+   "createdAt": "2026-09-29T18:00:00.000Z",
+   "updatedAt": "2026-10-02T05:00:00.000Z",
+   "example": true
+  },
+  {
+   "id": "ex2-w3",
+   "text": "Tom Hadley sent his first referral. A plumber who installs backflow assemblies is exactly the partner who keeps your spring calendar full.",
+   "by": "claude",
+   "date": "2026-09-19",
+   "createdAt": "2026-09-19T18:00:00.000Z",
+   "updatedAt": "2026-10-02T05:00:00.000Z",
+   "example": true
+  },
+  {
+   "id": "ex2-w4",
+   "text": "Five new businesses this week and one booked. Maria's quote is two days old — a quick stop between 2 and 4 could close it.",
+   "by": "claude",
+   "date": "2026-10-01",
+   "createdAt": "2026-10-01T18:00:00.000Z",
+   "updatedAt": "2026-10-02T05:00:00.000Z",
+   "example": true
   }
  ],
  "goals": {

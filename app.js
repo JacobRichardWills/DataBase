@@ -14,8 +14,8 @@ const STAGES = [
   { n: 4, label: 'Recurring client', short: 'Recurring', list: 'Recurring' },
 ];
 
-const TYPES = ['Homebuyer', 'Homeowner / seller', 'Realtor', 'Property manager', 'Lender', 'Contractor', 'Investor', 'Other'];
-const SOURCES = ['Referral', 'Realtor', 'Past client', 'Door knock', 'Open house', 'Website', 'Social media', 'Networking event', 'Other'];
+const TYPES = ['Restaurant / food service', 'Retail / office', 'Industrial / warehouse', 'Medical / care facility', 'Church / school', 'HOA / apartments', 'Property manager', 'Contractor / partner', 'Other'];
+const SOURCES = ['Referral', 'Walk-in / door to door', 'Cold call', 'Past client', 'Website', 'Social media', 'Networking event', 'Other'];
 
 const ACTS = [
   { id: 'text', label: 'Text', title: 'Text sent', icon: 'message' },
@@ -69,6 +69,11 @@ const ICON = {
   external: '<path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/>',
   inbox: '<path d="M3.5 13.5 6 5h12l2.5 8.5V19a1 1 0 0 1-1 1h-15a1 1 0 0 1-1-1z"/><path d="M3.5 13.5H9l1 2h4l1-2h5.5"/>',
   up: '<path d="m6 14.5 6-6 6 6"/>',
+  map: '<path d="M9 4 3.5 6v14L9 18l6 2 5.5-2V4L15 6z"/><path d="M9 4v14M15 6v14"/>',
+  locate: '<circle cx="12" cy="12" r="6.5"/><circle cx="12" cy="12" r="2"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3"/>',
+  fit: '<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>',
+  pinPlus: '<path d="M12 21s-6.5-5.8-6.5-11a6.5 6.5 0 0 1 13 0C18.5 15.2 12 21 12 21z"/><path d="M12 7.5v5M9.5 10h5"/>',
+  route: '<circle cx="6" cy="18" r="2.5"/><circle cx="18" cy="6" r="2.5"/><path d="M8.5 18H15a3 3 0 0 0 0-6H9a3 3 0 0 1 0-6h6.5"/>',
   down: '<path d="m6 9.5 6 6 6-6"/>',
 };
 const icon = (n, cls = '') => `<svg viewBox="0 0 24 24" class="${cls}" aria-hidden="true">${ICON[n] || ''}</svg>`;
@@ -135,7 +140,7 @@ normalize(draft);
 let undo = LS.get('lb2.undo', []);            // [{key, text, before, pendingBefore}] newest last
 let snap = structuredClone(draft);             // draft as of the last recorded change
 let changeSeq = 0;
-let ui = { filter: 'active', q: '', showDone: false, histFilter: 'all', notesOpen: {}, setOpen: {} };
+let ui = { filter: 'active', q: '', showDone: false, histFilter: 'all', notesOpen: {}, setOpen: {}, mapFilter: 'active' };
 
 function normalize(d) {
   d.clients ||= []; d.tasks ||= []; d.wins ||= []; d.quoteStatus ||= {};
@@ -306,6 +311,7 @@ function updateSaveBar() {
   const n = pending.length;
   document.body.classList.toggle('has-pending', n > 0);
   $('#savebar').hidden = n === 0;
+  if (route().name === 'map') requestAnimationFrame(sizeMap);
   $('#saveCount').textContent = `${n} unsaved ${n === 1 ? 'change' : 'changes'}`;
   const oldest = pending.reduce((m, p) => (!m || p.at < m ? p.at : m), '');
   $('#savebar .savebar-info span').textContent = oldest && Date.now() - new Date(oldest) > 3 * 3600e3
@@ -606,6 +612,7 @@ const editingInline = () => document.activeElement?.classList?.contains('ed');
 function render() {
   const r = route();
   const tab = r.name === 'client' ? 'clients' : r.name;
+  document.body.classList.toggle('route-map', r.name === 'map');
   document.querySelectorAll('.tabs a').forEach(a => {
     if (a.dataset.tab === tab) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
   });
@@ -618,10 +625,11 @@ function render() {
   const caret = keepSearch ? active.selectionStart : 0;
   const pane = $('.detail-pane');
   const paneScroll = pane ? pane.scrollTop : 0;
-  $('#view').innerHTML = (views[r.name] || viewDashboard)(r);
+  if (r.name === 'map') mountMap(r);
+  else $('#view').innerHTML = (views[r.name] || viewDashboard)(r);
   if (keepSearch) { const q = $('#q'); if (q) { q.focus(); q.setSelectionRange(caret, caret); } }
   if (pane && $('.detail-pane')) $('.detail-pane').scrollTop = paneScroll;
-  const titles = { dashboard: 'Dashboard', clients: 'Clients', client: byId(r.id)?.name || 'Client', history: 'History', settings: 'Settings' };
+  const titles = { dashboard: 'Dashboard', clients: 'Clients', client: byId(r.id)?.name || 'Client', map: 'Map', history: 'History', settings: 'Settings' };
   document.title = `${titles[r.name] || 'Dashboard'} · Lead Book`;
 }
 
@@ -766,6 +774,7 @@ function parseQuote(issue) {
   return {
     id: q.id || 'issue-' + issue.number,
     name: q.name || issue.title.replace(/^Quote request:\s*/i, '').split(' — ')[0],
+    business: q.business || '', count: q.count || '',
     phone: q.phone || '', email: q.email || '', address: q.address || '', service: q.service || '',
     timeline: q.timeline || '', message: q.message || '', submittedAt: q.submittedAt || issue.created_at,
     issue: issue.number, url: issue.html_url,
@@ -809,7 +818,7 @@ function quotesSection(nq) {
     <ul class="items panel quotes">${nq.map(q => `<li class="item">
       <span class="q-badge">${icon('inbox')}</span>
       <button class="item-main" type="button" data-action="quote" data-q="${esc(q.id)}">
-        <div class="item-title">${esc(q.name)}${q.service ? ` <span class="muted" style="font-weight:500">· ${esc(q.service)}</span>` : ''}</div>
+        <div class="item-title">${esc(q.business || q.name)}${q.service ? ` <span class="muted" style="font-weight:500">· ${esc(q.service)}</span>` : ''}</div>
         <div class="item-sub today">Requested ${esc(timeAgo(q.submittedAt))}${q.address ? ' · ' + esc(q.address) : ''}</div>
       </button>
       ${q.phone ? `<a class="icon-btn sm" href="tel:${digits(q.phone)}" aria-label="Call ${esc(q.name)}">${icon('phone')}</a>` : ''}
@@ -826,7 +835,7 @@ function quoteSheet(q) {
   const match = matchClientFor(q);
   const row = (k, v) => v ? `<div><dt>${k}</dt><dd>${v}</dd></div>` : '';
   const body = `<dl class="q-details">
-      ${row('Name', esc(q.name))}${row('Service', esc(q.service))}
+      ${row('Business', esc(q.business))}${row('Contact', esc(q.name))}${row('Service', esc(q.service))}${row('How many', esc(q.count))}
       ${row('Phone', q.phone ? `<a href="tel:${digits(q.phone)}">${esc(q.phone)}</a>` : '')}
       ${row('Email', q.email ? `<a href="mailto:${esc(q.email)}">${esc(q.email)}</a>` : '')}
       ${row('Property', esc(q.address))}${row('Timeline', esc(q.timeline))}
@@ -854,15 +863,15 @@ function handleQuote(q, how, match) {
   }
   let c = how === 'existing' && match ? byId(match.id) : null;
   if (!c) {
-    c = { id: uid(), name: q.name, business: '', phone: q.phone, email: q.email, address: q.address, type: 'Homebuyer', source: 'Website',
+    c = { id: uid(), name: q.name, business: q.business || '', phone: q.phone, email: q.email, address: q.address, type: '', source: 'Website',
       referredBy: '', notes: '', stages: { 1: today() }, nextFollowUp: '', followUpNote: '', archived: false, createdAt: t, updatedAt: t, activities: [] };
     draft.clients.push(c);
   } else if (c.archived) { c.archived = false; c.archivedAt = ''; }
   if (!c.stages[1]) c.stages[1] = today();
-  const details = [q.service && `Service: ${q.service}`, q.address && `Property: ${q.address}`, q.timeline && `Timeline: ${q.timeline}`, q.message].filter(Boolean).join('\n');
+  const details = [q.service && `Service: ${q.service}`, q.count && `How many: ${q.count}`, q.address && `Property: ${q.address}`, q.timeline && `Timeline: ${q.timeline}`, q.message].filter(Boolean).join('\n');
   addEntry(c, { type: 'quote', title: 'Quote requested on website', date: dayOf(q.submittedAt), note: details });
   c.nextFollowUp = today(); c.followUpNote = 'Respond to quote request';
-  draft.tasks.push({ id: uid(), kind: 'task', text: `Send quote to ${q.name}${q.service ? ` (${q.service})` : ''}`, due: today(), clientId: c.id, done: false, createdAt: t, updatedAt: t });
+  draft.tasks.push({ id: uid(), kind: 'task', text: `Send quote to ${q.business || q.name}${q.service ? ` (${q.service})` : ''}`, due: today(), clientId: c.id, done: false, createdAt: t, updatedAt: t });
   draft.quoteStatus[q.id] = { status: 'added', clientId: c.id, issue: q.issue, name: q.name, updatedAt: t };
   touch(c);
   location.hash = '#client/' + c.id;
@@ -927,13 +936,13 @@ function ed(c, field, { cls = '', type = 'text', placeholder = '', label = '' } 
   return `<input class="ed ${cls}" type="${type}" value="${esc(c[field])}" placeholder="${esc(placeholder)}" data-edit="${field}" data-id="${c.id}"${label ? ` aria-label="${esc(label)}"` : ''}${type === 'tel' ? ' inputmode="tel"' : ''}${type === 'email' ? ' inputmode="email" autocapitalize="off"' : ''}>`;
 }
 function edSelect(c, field, opts, blank) {
+  if (c[field] && !opts.includes(c[field])) opts = [...opts, c[field]]; // keep older values visible
   return `<select class="ed" data-edit="${field}" data-id="${c.id}">${blank ? `<option value="">${blank}</option>` : ''}${opts.map(o => `<option${o === c[field] ? ' selected' : ''}>${esc(o)}</option>`).join('')}</select>`;
 }
 
 function clientDetail(c) {
   const st = stageOf(c);
   const hist = acts(c);
-  const mapHref = c.address ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(c.address)}` : '';
   const dis = v => v ? '' : 'disabled';
   return `<article class="card">
     <a class="back" href="#clients">${icon('chevL')}Clients</a>
@@ -948,30 +957,11 @@ function clientDetail(c) {
       <a class="${dis(c.phone)}" href="${c.phone ? 'tel:' + digits(c.phone) : '#'}">${icon('phone')}Call</a>
       <a class="${dis(c.phone)}" href="${c.phone ? 'sms:' + digits(c.phone) : '#'}">${icon('message')}Text</a>
       <a class="${dis(c.email)}" href="${c.email ? 'mailto:' + esc(c.email) : '#'}">${icon('mail')}Email</a>
-      <a class="${dis(c.address)}" href="${mapHref || '#'}" target="_blank" rel="noopener">${icon('pin')}Map</a>
+      <a href="#map/${c.id}">${icon('pin')}Map</a>
     </div>
 
-    <div class="c-block">
-      <p class="c-block-title">Progress</p>
-      <div class="journey">${STAGES.map(s => `<button type="button" class="step${c.stages[s.n] ? ' filled' : ''}" data-n="${s.n}" data-action="stage" data-id="${c.id}"
-          aria-pressed="${!!c.stages[s.n]}" aria-label="${s.label}${c.stages[s.n] ? ', done ' + fmtDay(c.stages[s.n]) : ''}">
-          <span class="ring">${icon('check')}</span><span class="step-label">${s.short}</span><span class="step-date">${esc(fmtDay(c.stages[s.n]))}</span></button>`).join('')}</div>
-    </div>
-
-    <div class="c-block">
-      <p class="c-block-title">Coming up <button class="btn sm" type="button" data-action="add-task" data-client="${c.id}">${icon('plus')}Task</button></p>
-      <div class="fu">
-        <div><p class="c-block-title" style="margin-bottom:2px;font-weight:600">Next follow-up</p>
-          <div class="fu-date ${dueClass(c.nextFollowUp)}">${c.nextFollowUp ? esc(fmtDay(c.nextFollowUp, { weekday: 'long', month: 'short', day: 'numeric' })) + (daysBetween(today(), c.nextFollowUp) < 0 ? ` · ${esc(relDay(c.nextFollowUp))}` : '') : 'None set'}</div>
-          ${c.followUpNote ? `<div class="fu-note">${esc(c.followUpNote)}</div>` : ''}</div>
-        <div style="display:flex;gap:6px">
-          ${c.nextFollowUp ? `<button class="btn sm" type="button" data-action="fu-done" data-id="${c.id}">${icon('check')}Done</button>` : ''}
-          <button class="btn sm" type="button" data-action="followup" data-id="${c.id}">${icon('calendar')}${c.nextFollowUp ? 'Change' : 'Set'}</button>
-        </div>
-      </div>
-      ${(() => { const ts = openTasks().filter(k => k.clientId === c.id).sort((a, b) => (a.due || '9999').localeCompare(b.due || '9999'));
-        return ts.length ? `<ul class="items client-tasks">${ts.map(taskItem).join('')}</ul>` : ''; })()}
-    </div>
+    <div class="c-block">${journeyHtml(c)}</div>
+    <div class="c-block">${comingUpHtml(c)}</div>
 
     <div class="c-block">
       <p class="c-block-title">Contact info</p>
@@ -985,12 +975,7 @@ function clientDetail(c) {
       </div>
     </div>
 
-    <div class="c-block">
-      <details class="notes" data-id="${c.id}"${!c.notes || ui.notesOpen[c.id] ? ' open' : ''}>
-        <summary>Notes<span class="preview">${esc((c.notes || '').split('\n')[0])}</span>${icon('chevD')}</summary>
-        <textarea class="ed" data-edit="notes" data-id="${c.id}" placeholder="Anything worth remembering — the house, their timeline, who else is involved.">${esc(c.notes)}</textarea>
-      </details>
-    </div>
+    <div class="c-block">${notesHtml(c)}</div>
 
     <div class="c-block">
       <p class="c-block-title">History <button class="btn sm" type="button" data-action="log" data-id="${c.id}">${icon('plus')}Log contact</button></p>
@@ -1005,6 +990,33 @@ function clientDetail(c) {
       <span class="muted" style="font-size:12.5px;align-self:center;margin-left:auto">${esc(STAGES[st - 1]?.label || 'No stage yet')} · added ${esc(relWhen(c.createdAt))}</span>
     </div>
   </article>`;
+}
+
+function journeyHtml(c) {
+  return `<p class="c-block-title">Progress</p>
+    <div class="journey">${STAGES.map(s => `<button type="button" class="step${c.stages[s.n] ? ' filled' : ''}" data-n="${s.n}" data-action="stage" data-id="${c.id}"
+        aria-pressed="${!!c.stages[s.n]}" aria-label="${s.label}${c.stages[s.n] ? ', done ' + fmtDay(c.stages[s.n]) : ''}">
+        <span class="ring">${icon('check')}</span><span class="step-label">${s.short}</span><span class="step-date">${esc(fmtDay(c.stages[s.n]))}</span></button>`).join('')}</div>`;
+}
+function comingUpHtml(c) {
+  const ts = openTasks().filter(k => k.clientId === c.id).sort((a, b) => (a.due || '9999').localeCompare(b.due || '9999'));
+  return `<p class="c-block-title">Coming up <button class="btn sm" type="button" data-action="add-task" data-client="${c.id}">${icon('plus')}Task</button></p>
+    <div class="fu">
+      <div><p class="c-block-title" style="margin-bottom:2px;font-weight:600">Next follow-up</p>
+        <div class="fu-date ${dueClass(c.nextFollowUp)}">${c.nextFollowUp ? esc(fmtDay(c.nextFollowUp, { weekday: 'long', month: 'short', day: 'numeric' })) + (daysBetween(today(), c.nextFollowUp) < 0 ? ` · ${esc(relDay(c.nextFollowUp))}` : '') : 'None set'}</div>
+        ${c.followUpNote ? `<div class="fu-note">${esc(c.followUpNote)}</div>` : ''}</div>
+      <div style="display:flex;gap:6px">
+        ${c.nextFollowUp ? `<button class="btn sm" type="button" data-action="fu-done" data-id="${c.id}">${icon('check')}Done</button>` : ''}
+        <button class="btn sm" type="button" data-action="followup" data-id="${c.id}">${icon('calendar')}${c.nextFollowUp ? 'Change' : 'Set'}</button>
+      </div>
+    </div>
+    ${ts.length ? `<ul class="items client-tasks">${ts.map(taskItem).join('')}</ul>` : ''}`;
+}
+function notesHtml(c) {
+  return `<details class="notes" data-id="${c.id}"${!c.notes || ui.notesOpen[c.id] ? ' open' : ''}>
+      <summary>Notes<span class="preview">${esc((c.notes || '').split('\n')[0])}</span>${icon('chevD')}</summary>
+      <textarea class="ed" data-edit="notes" data-id="${c.id}" placeholder="Anything worth remembering — the building, who to ask for, gate codes, what they need.">${esc(c.notes)}</textarea>
+    </details>`;
 }
 
 function timelineItem(c, a) {
@@ -1223,6 +1235,495 @@ function viewSettings() {
   </div>`;
 }
 
+/* ================= Map ================= */
+// Leaflet + OpenStreetMap tiles, Nominatim for address lookups.
+// Lookups are cached on this device (Nominatim asks for ≤1 request/second and
+// caching). A pin you place yourself is saved on the client (lat/lng), so it
+// shows on every device and wins over the looked-up address.
+
+const LEAFLET = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/';
+const NOMINATIM = 'https://nominatim.openstreetmap.org';
+const HOME = [40.6097, -111.9391];            // West Jordan
+const VIEWBOX = '-112.3,41.2,-111.5,40.2';    // prefer Wasatch Front results
+const mapS = { el: null, map: null, markers: new Map(), temp: null, me: null, mode: null, loading: null,
+  autoFit: true, fitCount: 0, lastSel: null, results: null, expanded: false, error: '' };
+const geo = { cache: LS.get('lb2.geo', {}), busy: false, last: 0 };
+const normAddr = a => String(a || '').trim().toLowerCase().replace(/\s+/g, ' ');
+const isDesk = () => matchMedia('(min-width: 900px)').matches;
+
+function pinnedCoords(c) {
+  return c.lat != null && c.lng != null && (c.geoAddr == null || normAddr(c.geoAddr) === normAddr(c.address)) ? [c.lat, c.lng] : null;
+}
+function coordsOf(c) {
+  const p = pinnedCoords(c);
+  if (p) return p;
+  const g = c.address && geo.cache[normAddr(c.address)];
+  return g && g.lat != null ? [g.lat, g.lng] : null;
+}
+function geoState(c) {
+  if (coordsOf(c)) return 'ok';
+  if (!String(c.address || '').trim()) return 'noaddr';
+  return geo.cache[normAddr(c.address)] ? 'notfound' : 'pending';
+}
+const staleMiss = g => g && g.lat == null && Date.now() - new Date(g.at) > 7 * 86400e3;
+
+// One Nominatim request at a time, at least 1.1s apart.
+let nomChain = Promise.resolve();
+function nominatim(path, params) {
+  const run = async () => {
+    const wait = geo.last + 1100 - Date.now();
+    if (wait > 0) await new Promise(r => setTimeout(r, wait));
+    geo.last = Date.now();
+    const r = await fetch(`${NOMINATIM}/${path}?${new URLSearchParams({ format: 'jsonv2', ...params })}`, { headers: { 'Accept-Language': 'en' } });
+    if (!r.ok) throw new Error(`Address lookup failed (${r.status})`);
+    return r.json();
+  };
+  const p = nomChain.then(run, run);
+  nomChain = p.catch(() => {});
+  return p;
+}
+function shortAddress(hit) {
+  const a = hit.address || {};
+  const street = [a.house_number, a.road].filter(Boolean).join(' ');
+  const city = a.city || a.town || a.village || a.hamlet || a.suburb || '';
+  const state = a.state === 'Utah' ? 'UT' : a.state || '';
+  const out = [street || hit.name, city, [state, a.postcode].filter(Boolean).join(' ')].filter(Boolean).join(', ');
+  return out || hit.display_name || '';
+}
+
+async function geocodeMissing() {
+  if (geo.busy) return;
+  geo.busy = true;
+  try {
+    for (;;) {
+      if (route().name !== 'map' || !navigator.onLine) break;
+      const c = clients().find(c => String(c.address || '').trim() && !pinnedCoords(c) && (!geo.cache[normAddr(c.address)] || staleMiss(geo.cache[normAddr(c.address)])));
+      if (!c) break;
+      const key = normAddr(c.address);
+      renderMapStatus(`Finding ${c.name} on the map…`);
+      try {
+        const [hit] = await nominatim('search', { q: c.address, limit: 1, countrycodes: 'us', viewbox: VIEWBOX });
+        geo.cache[key] = hit ? { lat: +hit.lat, lng: +hit.lon, at: nowIso() } : { lat: null, at: nowIso() };
+      } catch { break; }  // offline or blocked: try again next time
+      LS.set('lb2.geo', geo.cache);
+      syncMarkers();
+    }
+  } finally {
+    geo.busy = false;
+    if (route().name === 'map') renderMapChrome(route());
+  }
+}
+
+function loadLeaflet() {
+  if (window.L) return Promise.resolve();
+  return mapS.loading ||= new Promise((res, rej) => {
+    const css = document.createElement('link');
+    css.rel = 'stylesheet'; css.href = LEAFLET + 'leaflet.css';
+    const js = document.createElement('script');
+    js.src = LEAFLET + 'leaflet.js';
+    js.onload = res;
+    js.onerror = () => { mapS.loading = null; css.remove(); js.remove(); rej(new Error('Couldn’t load the map. Check your connection and tap Try again.')); };
+    document.head.append(css, js);
+  });
+}
+
+function mountMap(r) {
+  if (!mapS.el) {
+    const el = mapS.el = document.createElement('div');
+    el.className = 'mapview';
+    el.innerHTML = `
+      <div class="map-canvas" aria-label="Map of clients"></div>
+      <div class="map-top">
+        <label class="search map-search">${icon('search')}<span class="sr-only">Search clients or an address</span>
+          <input id="mq" type="search" placeholder="Search clients or an address" autocomplete="off" enterkeyhint="search"></label>
+        <div class="map-results" id="mapResults" hidden></div>
+        <div class="chips map-chips" id="mapChips" role="group" aria-label="Filter"></div>
+      </div>
+      <div class="map-tools">
+        <button class="map-tool" type="button" data-action="map-drop" title="Drop a pin to add a client" aria-label="Drop a pin to add a client">${icon('pinPlus')}</button>
+        <button class="map-tool" type="button" data-action="map-locate" title="Show where I am" aria-label="Show where I am">${icon('locate')}</button>
+        <button class="map-tool" type="button" data-action="map-fit" title="Show all clients" aria-label="Show all clients">${icon('fit')}</button>
+      </div>
+      <div class="map-hint" id="mapHint" hidden></div>
+      <div class="map-status" id="mapStatus" hidden></div>
+      <aside class="map-panel" id="mapPanel" hidden></aside>`;
+    const q = el.querySelector('#mq');
+    let t;
+    q.addEventListener('input', () => { clearTimeout(t); t = setTimeout(() => { if (q.value.trim() !== mapS.resultsFor) mapS.results = null; renderResults(); }, 120); });
+    q.addEventListener('keydown', e => {
+      if (e.key === 'Escape') { q.value = ''; renderResults(); q.blur(); }
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        clearTimeout(t);
+        const hits = clientHits(q.value);
+        if (hits.length === 1) pickClient(hits[0].id); else placeSearch(q.value);
+      }
+    });
+    q.addEventListener('focus', renderResults);
+  }
+  const view = $('#view');
+  if (mapS.el.parentNode !== view) { view.replaceChildren(mapS.el); }
+  renderMapChrome(r);
+  requestAnimationFrame(sizeMap);
+  loadLeaflet().then(() => {
+    mapS.error = '';
+    initMap();
+    syncMarkers();
+    focusSelected(route());
+    geocodeMissing();
+  }).catch(e => { mapS.error = e.message; renderMapChrome(route()); });
+}
+
+function sizeMap() {
+  if (!mapS.el?.isConnected) return;
+  const bottom = isDesk() ? 0 : $('.tabs').offsetHeight + ($('#savebar').hidden ? 0 : $('#savebar').offsetHeight);
+  const h = Math.max(320, window.innerHeight - mapS.el.getBoundingClientRect().top - bottom);
+  mapS.el.style.height = h + 'px';
+  mapS.map?.invalidateSize();
+}
+window.addEventListener('resize', () => { if (route().name === 'map') sizeMap(); });
+
+function initMap() {
+  if (mapS.map) { mapS.map.invalidateSize(); return; }
+  const m = mapS.map = L.map(mapS.el.querySelector('.map-canvas'), { zoomControl: false }).setView(HOME, 11);
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>',
+  }).addTo(m);
+  if (isDesk()) L.control.zoom({ position: 'bottomright' }).addTo(m);
+  m.on('dragstart', () => { mapS.autoFit = false; });
+  m.on('click', e => onMapTap(e.latlng));
+  m.on('contextmenu', e => dropTempPin(e.latlng));  // long-press on phones, right-click on laptops
+}
+
+const mapFilterOk = c => {
+  const f = ui.mapFilter || 'active';
+  if (f === 'archived') return c.archived;
+  if (c.archived) return false;
+  if (f === 'action') return needsAction(c);
+  if (/^st\d$/.test(f)) return stageOf(c) === Number(f[2]);
+  return true;
+};
+const mapClients = () => clients().filter(mapFilterOk);
+const unplaced = () => clients().filter(c => !c.archived && geoState(c) !== 'ok');
+
+function markerIcon(c, sel) {
+  return L.divIcon({ className: 'mpin-wrap', html: `<span class="mpin${sel ? ' sel' : ''}">${cdot(c)}</span>`, iconSize: [44, 44], iconAnchor: [22, 22] });
+}
+function syncMarkers() {
+  if (!mapS.map) return;
+  const r = route(), sel = r.name === 'map' ? r.id : null;
+  const seen = new Set();
+  for (const c of mapClients()) {
+    const ll = coordsOf(c);
+    if (!ll) continue;
+    seen.add(c.id);
+    const key = `${stageOf(c)}|${needsAction(c)}|${c.id === sel}|${initials(c.name)}`;
+    let mk = mapS.markers.get(c.id);
+    if (!mk) {
+      mk = L.marker(ll, { icon: markerIcon(c, c.id === sel), title: c.name, riseOnHover: true }).addTo(mapS.map);
+      mk.on('click', () => { location.hash = '#map/' + c.id; });
+      mk._k = key; mapS.markers.set(c.id, mk);
+    } else {
+      mk.setLatLng(ll);
+      if (mk._k !== key) { mk.setIcon(markerIcon(c, c.id === sel)); mk._k = key; }
+      mk.options.title = c.name;
+    }
+    mk.setZIndexOffset(c.id === sel ? 2000 : needsAction(c) ? 1000 : 0);
+  }
+  for (const [id, mk] of mapS.markers) if (!seen.has(id)) { mk.remove(); mapS.markers.delete(id); }
+  if (mapS.autoFit && !sel && seen.size && seen.size !== mapS.fitCount) { fitAll(false); mapS.fitCount = seen.size; }
+}
+function fitAll(animate = true) {
+  const lls = [...mapS.markers.values()].map(m => m.getLatLng());
+  if (!mapS.map || !lls.length) return;
+  if (lls.length === 1) mapS.map.setView(lls[0], 14, { animate });
+  else mapS.map.fitBounds(L.latLngBounds(lls), { padding: isDesk() ? [80, 80] : [50, 50], paddingTopLeft: isDesk() ? [80, 80] : [40, 150], paddingBottomRight: isDesk() ? [440, 60] : [40, 40], maxZoom: 15, animate });
+}
+// Center on a point, leaving room for the panel.
+function centerOn(ll, zoom) {
+  const m = mapS.map;
+  const z = Math.max(m.getZoom(), zoom || 14);
+  const panel = $('#mapPanel');
+  const off = !panel || panel.hidden ? [0, 0] : isDesk() ? [(panel.offsetWidth + 24) / 2, 0] : [0, panel.offsetHeight / 2 - 30];
+  const pt = m.project(ll, z).add(L.point(off[0], off[1]));
+  m.setView(m.unproject(pt, z), z, { animate: true });
+}
+function focusSelected(r) {
+  if (!mapS.map || r.name !== 'map') return;
+  if (r.id && r.id !== mapS.lastSel) {
+    const c = byId(r.id), ll = c && coordsOf(c);
+    if (ll) { mapS.autoFit = false; requestAnimationFrame(() => centerOn(ll, 14)); }
+  }
+  mapS.lastSel = r.id || null;
+}
+
+/* ----- overlays ----- */
+function renderMapChrome(r) {
+  if (!mapS.el) return;
+  const all = clients().filter(c => !c.archived);
+  const counts = { active: all.length, action: all.filter(needsAction).length, archived: clients().length - all.length };
+  STAGES.forEach(s => { counts['st' + s.n] = all.filter(c => stageOf(c) === s.n).length; });
+  const f = ui.mapFilter || 'active';
+  const chip = (id, label, n, color) => `<button type="button" class="chip" data-action="map-filter" data-f="${id}" aria-pressed="${f === id}">${color ? `<i style="background:${color}"></i>` : ''}${esc(label)} <small>${n}</small></button>`;
+  const off = unplaced();
+  $('#mapChips').innerHTML = chip('active', 'All active', counts.active)
+    + (counts.action ? chip('action', 'Needs action', counts.action, 'var(--alert)') : '')
+    + STAGES.map(s => counts['st' + s.n] ? chip('st' + s.n, s.list, counts['st' + s.n], `var(--st${s.n})`) : '').join('')
+    + (counts.archived ? chip('archived', 'Archive', counts.archived) : '')
+    + (off.length ? `<button type="button" class="chip chip-warn" data-action="map-unplaced">${icon('pin')}${off.length} not on map</button>` : '');
+
+  const hint = $('#mapHint');
+  if (mapS.mode) {
+    const c = mapS.mode.kind === 'place' ? byId(mapS.mode.id) : null;
+    hint.innerHTML = `<span>${c ? `Tap where <b>${esc(c.name)}</b> is` : 'Tap the map where the new client is'}</span><button type="button" class="btn sm" data-action="map-cancel">Cancel</button>`;
+    hint.hidden = false;
+  } else hint.hidden = true;
+  mapS.el.classList.toggle('placing', !!mapS.mode);
+
+  renderMapStatus(mapS.error ? '' : geo.busy ? null : '');
+  renderPanel(r);
+  syncMarkers();
+  focusSelected(r);
+}
+function renderMapStatus(text) {
+  const st = $('#mapStatus');
+  if (!st || text === null) return;
+  if (mapS.error) { st.innerHTML = `${esc(mapS.error)} <button type="button" class="btn sm" data-action="map-retry">Try again</button>`; st.hidden = false; return; }
+  st.textContent = text || '';
+  st.hidden = !text;
+}
+
+function renderPanel(r) {
+  const p = $('#mapPanel');
+  const keep = p.scrollTop;
+  let html = '';
+  if (mapS.temp) html = tempCard();
+  else if (r.id && byId(r.id)) html = mapCard(byId(r.id));
+  p.hidden = !html;
+  p.classList.toggle('expanded', mapS.expanded);
+  mapS.el.classList.toggle('has-panel', !!html);
+  const forKey = mapS.temp ? 'temp' : r.id || '';
+  const typing = p.contains(document.activeElement) && editingInline();
+  if (!html) p.innerHTML = '';
+  else if (!typing || p.dataset.for !== forKey) { p.innerHTML = html; if (p.dataset.for === forKey) p.scrollTop = keep; }
+  p.dataset.for = forKey;
+}
+
+function mapCard(c) {
+  const hist = acts(c);
+  const ll = coordsOf(c), gs = geoState(c);
+  const dir = ll ? `https://www.google.com/maps/dir/?api=1&destination=${ll[0]},${ll[1]}` : c.address ? `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(c.address)}` : '';
+  const where = gs === 'ok' ? '' : gs === 'noaddr' ? 'No address yet.' : gs === 'pending' ? 'Finding this address…' : 'Couldn’t find this address.';
+  const dis = v => v ? '' : 'disabled';
+  return `<button type="button" class="mp-grab" data-action="map-expand" aria-label="${mapS.expanded ? 'Show less' : 'Show more'}"><span></span></button>
+    <div class="mp-head">${cdot(c)}
+      <div class="mp-title"><a class="mp-name" href="#client/${c.id}">${esc(c.name)}</a>
+        <div class="mp-sub">${esc([c.business, c.type].filter(Boolean).join(' · ') || STAGES[stageOf(c) - 1]?.label || '')}</div></div>
+      <button class="icon-btn sm" type="button" data-action="map-close" aria-label="Close">${icon('x')}</button>
+    </div>
+    <div class="mp-addr">${icon('pin')}<span>${esc(c.address || 'No address')}${where ? `<em>${esc(where)}</em>` : ''}</span>
+      <button class="btn sm ghost" type="button" data-action="map-place" data-id="${c.id}">${ll ? 'Move pin' : 'Place on map'}</button></div>
+    <div class="c-actions mp-actions">
+      <a class="${dis(c.phone)}" href="${c.phone ? 'tel:' + digits(c.phone) : '#'}">${icon('phone')}Call</a>
+      <a class="${dis(c.phone)}" href="${c.phone ? 'sms:' + digits(c.phone) : '#'}">${icon('message')}Text</a>
+      <a class="${dis(dir)}" href="${dir || '#'}" target="_blank" rel="noopener">${icon('route')}Directions</a>
+      <button type="button" data-action="log" data-id="${c.id}">${icon('plus')}Log</button>
+    </div>
+    <div class="mp-more">
+      <div class="c-block">${journeyHtml(c)}</div>
+      <div class="c-block">${comingUpHtml(c)}</div>
+      <div class="c-block">${notesHtml(c)}</div>
+      <div class="c-block">
+        <p class="c-block-title">Recent history ${hist.length > 3 ? `<a class="btn sm ghost" href="#client/${c.id}">All ${hist.length}</a>` : ''}</p>
+        ${hist.length ? `<ol class="timeline">${hist.slice(0, 3).map(a => timelineItem(c, a)).join('')}</ol>` : `<p class="muted" style="margin:0;font-size:13.5px">Nothing logged yet.</p>`}
+      </div>
+      <div class="c-block"><a class="btn sm" href="#client/${c.id}">Open full client page</a></div>
+    </div>`;
+}
+
+function tempCard() {
+  const t = mapS.temp;
+  return `<div class="mp-head"><span class="cdot new-dot">${icon('plus')}</span>
+      <div class="mp-title"><div class="mp-name">New pin</div>
+        <div class="mp-sub">${t.looking ? 'Looking up the address…' : esc(t.address || 'No street address here — you can type one in.')}</div></div>
+      <button class="icon-btn sm" type="button" data-action="map-cancel" aria-label="Remove pin">${icon('x')}</button></div>
+    <p class="hint" style="margin:0 16px 10px">Drag the pin to adjust it.</p>
+    <div class="mp-temp-actions">
+      <button class="btn primary" type="button" data-action="map-add-here">${icon('user')}Add client here</button>
+      <button class="btn" type="button" data-action="map-cancel">Cancel</button>
+    </div>`;
+}
+
+/* ----- search ----- */
+function clientHits(q) {
+  const words = q.trim().toLowerCase().split(/\s+/).filter(Boolean);
+  if (!words.length) return [];
+  return clients().filter(c => { const hay = `${c.name} ${c.business || ''} ${c.address || ''}`.toLowerCase(); return words.every(w => hay.includes(w)); }).slice(0, 6);
+}
+function renderResults() {
+  const box = $('#mapResults'), q = $('#mq').value.trim();
+  if (!q || document.activeElement !== $('#mq') && !mapS.results) { box.hidden = true; return; }
+  const hits = clientHits(q);
+  let html = hits.map(c => `<button type="button" class="mr" data-action="map-pick" data-id="${c.id}">${cdot(c, 'sm')}
+      <span><b>${esc(c.name)}</b><small>${esc(c.business || c.address || '')}${geoState(c) === 'ok' ? '' : ' · not on map'}</small></span></button>`).join('');
+  if (mapS.results === 'loading') html += `<div class="mr muted">${icon('search')}<span>Searching the map…</span></div>`;
+  else if (Array.isArray(mapS.results)) html += mapS.results.length ? mapS.results.map((h, i) => `<button type="button" class="mr" data-action="map-place-result" data-i="${i}">
+      <span class="mr-ico">${icon('pin')}</span><span><b>${esc(shortAddress(h).split(',')[0])}</b><small>${esc(shortAddress(h).split(',').slice(1).join(',').trim())}</small></span></button>`).join('')
+    : `<div class="mr muted"><span>No places found for “${esc(q)}”</span></div>`;
+  else html += `<button type="button" class="mr" data-action="map-geosearch"><span class="mr-ico">${icon('pin')}</span><span><b>Find “${esc(q)}” on the map</b><small>Search addresses and places</small></span></button>`;
+  box.innerHTML = html;
+  box.hidden = false;
+}
+async function placeSearch(q) {
+  if (!q.trim()) return;
+  mapS.results = 'loading'; mapS.resultsFor = q.trim(); renderResults();
+  try { mapS.results = await nominatim('search', { q, limit: 5, countrycodes: 'us', viewbox: VIEWBOX, addressdetails: 1 }); }
+  catch (e) { mapS.results = []; toast(e.message); }
+  renderResults();
+}
+function pickClient(id) {
+  $('#mq').value = ''; mapS.results = null; $('#mapResults').hidden = true; $('#mq').blur();
+  if (mapS.temp) clearTempPin();
+  location.hash = '#map/' + id;
+  mapS.lastSel = null; focusSelected(route());
+}
+
+/* ----- pins ----- */
+function onMapTap(ll) {
+  const md = mapS.mode;
+  if (md?.kind === 'drop') { mapS.mode = null; dropTempPin(ll); return; }
+  if (md?.kind === 'place') { mapS.mode = null; placeClient(md.id, ll); return; }
+  $('#mapResults').hidden = true;
+  if (mapS.temp) { clearTempPin(); renderMapChrome(route()); return; }
+  if (route().id) location.hash = '#map';
+}
+async function dropTempPin(ll, address) {
+  clearTempPin(false);
+  mapS.mode = null;
+  const mk = L.marker(ll, { draggable: true, autoPan: true, zIndexOffset: 3000,
+    icon: L.divIcon({ className: 'mpin-wrap', html: `<span class="mpin-new">${icon('plus')}</span>`, iconSize: [44, 44], iconAnchor: [22, 22] }) }).addTo(mapS.map);
+  mapS.temp = { marker: mk, address: address || '', looking: !address };
+  mk.on('dragend', () => lookupTemp());
+  if (route().id) window.history.replaceState(null, '', '#map');
+  renderMapChrome(route());
+  centerOn(mk.getLatLng(), 16);
+  if (!address) lookupTemp();
+}
+async function lookupTemp() {
+  const t = mapS.temp;
+  if (!t) return;
+  t.looking = true; renderPanel(route());
+  const ll = t.marker.getLatLng();
+  try {
+    const hit = await nominatim('reverse', { lat: ll.lat.toFixed(6), lon: ll.lng.toFixed(6), zoom: 18, addressdetails: 1 });
+    if (mapS.temp === t) t.address = hit && !hit.error ? shortAddress(hit) : '';
+  } catch { if (mapS.temp === t) t.address = ''; }
+  if (mapS.temp === t) { t.looking = false; renderPanel(route()); }
+}
+function clearTempPin(rerender = true) {
+  if (mapS.temp) { mapS.temp.marker.remove(); mapS.temp = null; }
+  if (rerender && route().name === 'map') renderPanel(route());
+}
+async function placeClient(id, ll) {
+  const c = byId(id);
+  if (!c) return;
+  const needAddr = !String(c.address || '').trim();
+  Object.assign(c, { lat: +ll.lat.toFixed(6), lng: +ll.lng.toFixed(6), geoAddr: c.address || '' });
+  touch(c);
+  location.hash = '#map/' + c.id;
+  change('c:pin:' + c.id, `Pinned ${c.name} on the map`);
+  if (needAddr) {
+    try {
+      const hit = await nominatim('reverse', { lat: c.lat, lon: c.lng, zoom: 18, addressdetails: 1 });
+      const a = hit && !hit.error ? shortAddress(hit) : '';
+      const cur = byId(id);
+      if (a && cur && !String(cur.address || '').trim() && cur.lat === c.lat) {
+        cur.address = a; cur.geoAddr = a; touch(cur);
+        change('c:pin:' + c.id, `Pinned ${c.name} on the map at ${a}`, { typing: true });
+      }
+    } catch { /* keep the pin without an address */ }
+  }
+}
+function locateMe() {
+  if (!navigator.geolocation) return toast('This device can’t share its location');
+  navigator.geolocation.getCurrentPosition(pos => {
+    const ll = [pos.coords.latitude, pos.coords.longitude];
+    if (mapS.me) mapS.me.setLatLng(ll);
+    else mapS.me = L.circleMarker(ll, { radius: 8, color: '#fff', weight: 3, fillColor: '#2F7FE0', fillOpacity: 1 }).addTo(mapS.map);
+    mapS.autoFit = false;
+    mapS.map.setView(ll, Math.max(mapS.map.getZoom(), 14));
+  }, () => toast('Couldn’t get your location — check location permission'), { enableHighAccuracy: true, timeout: 10000 });
+}
+
+function unplacedSheet() {
+  const list = unplaced().sort((a, b) => a.name.localeCompare(b.name));
+  const why = { noaddr: 'No address', notfound: 'Address not found', pending: 'Looking up…' };
+  const body = `<p class="hint" style="margin:0 0 10px">Place them by tapping their spot on the map, or add an address on their client page.</p>
+    <div class="matches">${list.map(c => `<div class="match">${cdot(c, 'sm')}
+      <div class="match-main"><div class="match-name">${esc(c.name)}</div><div class="match-sub">${esc(why[geoState(c)])}${c.address ? ' · ' + esc(c.address) : ''}</div></div>
+      <button type="button" class="btn sm" data-place="${c.id}">${icon('pin')}Place</button></div>`).join('')}</div>`;
+  openSheet(shell('Not on the map', body, null), () => {}, d => d.querySelectorAll('[data-place]').forEach(b => b.addEventListener('click', () => {
+    d.close();
+    startPlacing(b.dataset.place);
+  })));
+}
+function startPlacing(id) {
+  clearTempPin(false);
+  mapS.expanded = false;
+  mapS.mode = { kind: 'place', id };
+  if (route().id !== id) window.history.replaceState(null, '', '#map/' + id);
+  mapS.lastSel = id;
+  renderMapChrome(route());
+}
+
+// Phone: swipe the panel up for more, down for less.
+let swipeY = null;
+document.addEventListener('touchstart', e => { const p = e.target.closest?.('#mapPanel'); swipeY = p && (p.scrollTop === 0 || !mapS.expanded) ? e.touches[0].clientY : null; }, { passive: true });
+document.addEventListener('touchend', e => {
+  if (swipeY == null) return;
+  const dy = e.changedTouches[0].clientY - swipeY;
+  swipeY = null;
+  if (dy < -40 && !mapS.expanded) { mapS.expanded = true; renderPanel(route()); }
+  else if (dy > 50 && mapS.expanded && $('#mapPanel').scrollTop === 0) { mapS.expanded = false; renderPanel(route()); }
+}, { passive: true });
+
+function mapAction(action, el) {
+  switch (action) {
+    case 'map-filter': ui.mapFilter = el.dataset.f; mapS.autoFit = true; mapS.fitCount = 0; renderMapChrome(route()); break;
+    case 'map-close': clearTempPin(false); location.hash = '#map'; break;
+    case 'map-expand': mapS.expanded = !mapS.expanded; renderPanel(route()); break;
+    case 'map-drop':
+      if (mapS.mode?.kind === 'drop') { mapS.mode = null; }
+      else { clearTempPin(false); mapS.mode = { kind: 'drop' }; if (route().id) window.history.replaceState(null, '', '#map'); }
+      renderMapChrome(route()); break;
+    case 'map-cancel': mapS.mode = null; clearTempPin(false); renderMapChrome(route()); break;
+    case 'map-locate': locateMe(); break;
+    case 'map-fit': mapS.autoFit = true; fitAll(); break;
+    case 'map-retry': mapS.error = ''; mountMap(route()); break;
+    case 'map-unplaced': unplacedSheet(); break;
+    case 'map-place': startPlacing(el.dataset.id); break;
+    case 'map-pick': pickClient(el.dataset.id); break;
+    case 'map-geosearch': placeSearch($('#mq').value); break;
+    case 'map-place-result': {
+      const h = mapS.results?.[+el.dataset.i];
+      if (!h) break;
+      $('#mq').value = ''; mapS.results = null; $('#mapResults').hidden = true;
+      mapS.autoFit = false;
+      dropTempPin(L.latLng(+h.lat, +h.lon), shortAddress(h));
+      break;
+    }
+    case 'map-add-here': {
+      const t = mapS.temp;
+      if (!t) break;
+      const ll = t.marker.getLatLng();
+      clientSheet({ address: t.address, lat: +ll.lat.toFixed(6), lng: +ll.lng.toFixed(6), onMap: true });
+      break;
+    }
+    default: return false;
+  }
+  return true;
+}
+
 /* ================= Sheets ================= */
 
 const sheet = () => $('#sheet');
@@ -1286,16 +1787,17 @@ function addChooser() {
 }
 
 /* ----- New client (with match search) ----- */
-function clientSheet() {
+function clientSheet(pre = {}) {
   const body = `<div class="form">
     ${'contacts' in navigator && 'ContactsManager' in window ? `<button type="button" class="btn sm" data-pick-contact>${icon('user')}Pick from phone contacts</button>` : ''}
     <label class="field"><span>Name</span><input name="name" required autofocus autocomplete="off"></label>
     <div class="matches" id="matches"></div>
-    <label class="field"><span>Business name</span><input name="business" placeholder="Company, brokerage, or leave blank"></label>
+    <label class="field"><span>Business name</span><input name="business" placeholder="Restaurant, office, church…"></label>
+    <label class="field"><span>Address</span><input name="address" value="${esc(pre.address || '')}" placeholder="Where the extinguishers or backflow are">${pre.lat != null ? '<span class="hint">Pinned on the map where you tapped.</span>' : ''}</label>
     <div class="two">
       <label class="field"><span>Phone</span><input name="phone" type="tel" inputmode="tel"></label>
       <label class="field"><span>Email</span><input name="email" type="email" inputmode="email" autocapitalize="off"></label>
-      <label class="field"><span>Type</span><select name="type">${options(TYPES, 'Homebuyer')}</select></label>
+      <label class="field"><span>Type</span><select name="type">${options(TYPES, '', 'Choose…')}</select></label>
       <label class="field"><span>Source</span><select name="source">${options(SOURCES, '', 'Choose…')}</select></label>
     </div>
     <label class="field"><span>Notes</span><textarea name="notes"></textarea></label>
@@ -1307,12 +1809,14 @@ function clientSheet() {
     const t = nowIso();
     const c = {
       id: uid(), name, business: fd.get('business').trim(), phone: fd.get('phone').trim(), email: fd.get('email').trim(),
-      type: fd.get('type'), source: fd.get('source'), notes: fd.get('notes').trim(), address: '', referredBy: '',
+      type: fd.get('type'), source: fd.get('source'), notes: fd.get('notes').trim(), address: fd.get('address').trim(), referredBy: '',
       stages: { 1: today() }, nextFollowUp: readFu(fd, '') || '', followUpNote: '', archived: false,
       createdAt: t, updatedAt: t, activities: [],
     };
+    if (pre.lat != null) Object.assign(c, { lat: pre.lat, lng: pre.lng, geoAddr: c.address });
     draft.clients.push(c);
-    location.hash = '#client/' + c.id;
+    if (pre.onMap) clearTempPin();
+    location.hash = (pre.onMap ? '#map/' : '#client/') + c.id;
     change('c:new:' + c.id, `Added client ${name}`);
     toast(`Added ${name}`);
   }, d => {
@@ -1452,7 +1956,7 @@ function followupSheet(c) {
 function taskSheet(k, clientId = '') {
   const cur = k || { text: '', due: '', clientId };
   const body = `<div class="form">
-    <label class="field"><span>Task</span><input name="text" value="${esc(cur.text)}" required autofocus placeholder="e.g. Drop off business cards at Summit Peak"></label>
+    <label class="field"><span>Task</span><input name="text" value="${esc(cur.text)}" required autofocus placeholder="e.g. Drop off a quote at Taqueria El Sol"></label>
     <div class="two">
       <label class="field"><span>Due</span><input type="date" name="due" value="${esc(cur.due)}"></label>
       <label class="field"><span>Client <span class="muted">(optional)</span></span><select name="clientId">${options(activeClients().sort((a, b) => a.name.localeCompare(b.name)).map(c => [c.id, c.name]), cur.clientId, 'None')}</select></label>
@@ -1502,7 +2006,7 @@ function winSheet(w) {
   const cur = w || { text: '', date: today() };
   const body = `<div class="form">
     ${w?.by === 'claude' ? '<p class="muted" style="margin:0">Added by Claude</p>' : ''}
-    <label class="field"><span>What went well?</span><textarea name="text" autofocus placeholder="e.g. Megan sent over her first buyer">${esc(cur.text)}</textarea></label>
+    <label class="field"><span>What went well?</span><textarea name="text" autofocus placeholder="e.g. Signed my first restaurant">${esc(cur.text)}</textarea></label>
     <label class="field"><span>Date</span><input type="date" name="date" value="${esc(cur.date)}"></label>
   </div>`;
   const extra = w ? `<button type="button" class="btn sm danger" data-del>${icon('trash')}Remove</button>` : '';
@@ -1630,6 +2134,7 @@ document.addEventListener('click', e => {
   const id = el.dataset.id;
   const c = id ? byId(id) : null;
   const t = id ? draft.tasks.find(x => x.id === id) : null;
+  if (el.dataset.action.startsWith('map-') && mapAction(el.dataset.action, el)) return;
   switch (el.dataset.action) {
     case 'fab': route().name === 'clients' ? clientSheet() : addChooser(); break;
     case 'pill': resync(); break;
@@ -1772,7 +2277,7 @@ document.addEventListener('submit', e => {
   }
 });
 
-window.addEventListener('hashchange', () => { if (route().name === 'settings') ui.setOpen = {}; render(); if (!location.hash.startsWith('#client/') || innerWidth < 900) window.scrollTo(0, 0); });
+window.addEventListener('hashchange', () => { if (route().name === 'settings') ui.setOpen = {}; if (route().name !== 'map') mapS.mode = null; render(); if (!location.hash.startsWith('#client/') || innerWidth < 900) window.scrollTo(0, 0); });
 window.addEventListener('beforeunload', () => persist(true));
 
 /* ================= Boot ================= */

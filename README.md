@@ -6,6 +6,7 @@ A client planner for an inspection business, modeled on the Area Book Planner.
 - **Clients** — every client with a colored dot for where they are:
   yellow = initial connection · green = service scheduled · blue = service completed · light blue = recurring.
   A red dot means something is due. Tap a client to edit their info, move them along the 4-step progress bar, keep notes, and log texts, calls, visits, emails, quotes and services. Old clients live in the Archive and can be reactivated.
+- **Map** — every client with an address as a dot in their stage color, with the red dot when something's due. Tap one for a panel with calls/texts/directions, progress, follow-up, notes and recent history. Drop a pin (or long-press) to add a client at that spot; "not on map" lists clients without a findable address so you can place them. Uses OpenStreetMap tiles and Nominatim lookups (cached per device, at most one per second); a pin you place is saved on the client as `lat`/`lng`/`geoAddr`.
 - **History** — the repo's commit log: every save from the app (with which device) and every change Claude makes. Tap an entry to see the details and files changed.
 - **Settings** — every section folds closed. Theme, dashboard layout (show/hide/reorder sections), name/business/website link — those are per device. Plus the GitHub token, quote requests, import/export and removing example data.
 

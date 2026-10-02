@@ -639,3 +639,112 @@ details.set[open] > summary svg { transform: rotate(180deg); }
 .q-details dt { font-size: 12.5px; color: var(--ink-3); font-weight: 600; padding-top: 2px; }
 .q-details dd { margin: 0; overflow-wrap: anywhere; }
 .tl[data-t="quote"] .tl-icon { background: color-mix(in srgb, var(--accent) 22%, var(--surface)); color: color-mix(in srgb, var(--accent) 60%, var(--ink)); border-color: transparent; }
+
+/* ---------- Map ---------- */
+.tabs { grid-template-columns: repeat(5, 1fr); }
+body.route-map { overflow: hidden; }
+body.route-map main { padding: 0; max-width: none; margin: 0; }
+.mapview { position: relative; height: 70vh; overflow: hidden; background: var(--surface-2); }
+.map-canvas { position: absolute; inset: 0; z-index: 0; background: var(--surface-2); }
+.mapview .leaflet-container { font-family: var(--f-body); background: var(--surface-2); }
+:root[data-theme="dark"] .mapview .leaflet-tile-pane { filter: invert(1) hue-rotate(180deg) brightness(.92) contrast(.88) saturate(.55); }
+.mapview .leaflet-control-attribution { font-size: 10.5px; background: color-mix(in srgb, var(--surface) 80%, transparent); color: var(--ink-3); border-radius: 6px 0 0 0; }
+.mapview .leaflet-control-attribution a { color: var(--ink-2); }
+.mapview .leaflet-bar { border: 1px solid var(--line); box-shadow: var(--shadow); border-radius: 10px; overflow: hidden; }
+.mapview .leaflet-bar a { background: var(--surface); color: var(--ink); border-color: var(--line); width: 36px; height: 36px; line-height: 36px; }
+.mapview.placing .map-canvas { cursor: crosshair; }
+.mapview.placing .leaflet-container { cursor: crosshair; }
+
+.map-top { position: absolute; z-index: 500; top: 12px; left: 12px; right: 12px; pointer-events: none; }
+.map-top > * { pointer-events: auto; }
+.map-search { box-shadow: var(--shadow); height: 48px; }
+.map-chips { padding: 8px 0 0; }
+.map-chips .chip { box-shadow: var(--shadow); }
+.chip i { display: inline-block; }
+.chip-warn { color: var(--ink-2); border-style: dashed; }
+.chip-warn svg { width: 15px; height: 15px; }
+@media (min-width: 900px) { .map-top { right: auto; width: min(420px, calc(100% - 440px)); } }
+
+.map-results { margin-top: 6px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-md); box-shadow: var(--shadow); overflow: hidden; max-height: 50vh; overflow-y: auto; }
+.mr { display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 12px; background: none; border: 0; text-align: left; cursor: pointer; color: inherit; }
+.mr + .mr { border-top: 1px solid var(--line); }
+.mr:hover { background: var(--surface-2); }
+.mr span:last-child { display: flex; flex-direction: column; min-width: 0; line-height: 1.25; }
+.mr b { font-weight: 640; font-size: 14.5px; }
+.mr small { color: var(--ink-3); font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mr-ico { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; background: var(--surface-2); color: var(--brand); flex: none; }
+.mr-ico svg { width: 16px; height: 16px; }
+.mr.muted { cursor: default; }
+
+.map-tools { position: absolute; z-index: 500; right: 12px; top: 116px; display: grid; gap: 8px; }
+.map-tool { width: 44px; height: 44px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); color: var(--ink-2); display: grid; place-items: center; cursor: pointer; box-shadow: var(--shadow); }
+.map-tool:hover { color: var(--brand); }
+.mapview.placing .map-tool[data-action="map-drop"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+@media (min-width: 900px) { .map-tools { top: 12px; right: auto; left: calc(min(420px, calc(100% - 440px)) + 24px); grid-auto-flow: column; } }
+.mapview.has-panel .map-tools { opacity: 1; }
+
+.map-hint, .map-status {
+  position: absolute; z-index: 600; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 10px;
+  background: var(--ink); color: var(--bg); padding: 8px 8px 8px 14px; border-radius: 12px; font-size: 14px; font-weight: 600;
+  box-shadow: 0 8px 22px -10px rgba(0, 0, 0, .5); max-width: calc(100% - 24px);
+}
+.map-hint { top: 116px; }
+.map-hint .btn { background: transparent; color: var(--bg); border-color: color-mix(in srgb, var(--bg) 40%, transparent); }
+.map-status { bottom: 16px; font-weight: 500; font-size: 13px; padding: 7px 12px; }
+.map-status .btn { background: var(--bg); color: var(--ink); }
+.mapview.has-panel .map-status { display: none; }
+@media (min-width: 900px) { .map-hint { top: 76px; } }
+
+/* Markers */
+.mpin-wrap { background: none; border: 0; }
+.mpin { width: 44px; height: 44px; display: grid; place-items: center; }
+.mpin .cdot { width: 30px; height: 30px; font-size: 11px; box-shadow: 0 0 0 2.5px #fff, 0 3px 8px rgba(0, 0, 0, .35); transition: transform .15s; }
+.mpin .cdot .alert { width: 11px; height: 11px; top: -4px; right: -4px; box-shadow: 0 0 0 2px #fff; }
+.mpin:hover .cdot { transform: scale(1.12); }
+.mpin.sel .cdot { transform: scale(1.3); box-shadow: 0 0 0 3px #fff, 0 0 0 6px var(--brand), 0 6px 14px rgba(0, 0, 0, .4); }
+.mpin-new { width: 44px; height: 44px; display: grid; place-items: center; }
+.mpin-new svg, .new-dot svg { width: 18px; height: 18px; stroke-width: 2.6; }
+.mpin-new::before { content: ""; position: absolute; width: 34px; height: 34px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 3px #fff, 0 6px 14px rgba(0, 0, 0, .4); }
+.mpin-new svg { position: relative; color: var(--accent-ink); }
+.mpin-new::after { content: ""; position: absolute; width: 34px; height: 34px; border-radius: 50%; border: 3px solid var(--accent); animation: ping 1.6s ease-out infinite; }
+@keyframes ping { to { transform: scale(2.2); opacity: 0; } }
+.cdot.new-dot { background: var(--accent); color: var(--accent-ink); }
+
+/* Client panel */
+.map-panel {
+  position: absolute; z-index: 700; left: 0; right: 0; bottom: 0; max-height: 46%; overflow-y: auto; overscroll-behavior: contain;
+  background: var(--surface); border-top: 1px solid var(--line); border-radius: 20px 20px 0 0; box-shadow: 0 -10px 30px -12px rgba(0, 0, 0, .35);
+  transition: max-height .2s ease;
+}
+.map-panel.expanded { max-height: 86%; }
+.mp-grab { display: block; width: 100%; height: 22px; background: none; border: 0; cursor: pointer; padding: 0; position: sticky; top: 0; z-index: 1; background: var(--surface); }
+.mp-grab span { display: block; width: 40px; height: 5px; border-radius: 3px; background: var(--line); margin: 8px auto 0; }
+.mp-head { display: flex; align-items: center; gap: 12px; padding: 4px 16px 8px; }
+.map-panel > .mp-head:first-child { padding-top: 16px; }
+.mp-head .cdot { width: 42px; height: 42px; font-size: 14px; }
+.mp-title { flex: 1; min-width: 0; }
+.mp-name { font: 760 20px/1.15 var(--f-display); font-stretch: 88%; color: var(--ink); text-decoration: none; display: block; overflow-wrap: anywhere; }
+a.mp-name:hover { color: var(--brand); }
+.mp-sub { font-size: 13.5px; color: var(--ink-3); }
+.mp-addr { display: flex; align-items: center; gap: 8px; padding: 0 16px 10px; font-size: 14px; color: var(--ink-2); }
+.mp-addr > svg { width: 17px; height: 17px; color: var(--ink-3); }
+.mp-addr > span { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.mp-addr em { display: block; font-style: normal; font-size: 12.5px; color: var(--danger); }
+.mp-actions { padding: 0 16px 12px; }
+.mp-actions a, .mp-actions button { padding: 8px 4px; }
+.map-panel .c-block { padding: 12px 16px; }
+.mp-temp-actions { display: flex; gap: 8px; padding: 0 16px 16px; }
+.mp-temp-actions .btn.primary { flex: 1; }
+@media (min-width: 900px) {
+  .map-panel { left: auto; right: 12px; top: 12px; bottom: 12px; width: 380px; max-height: none; border: 1px solid var(--line); border-radius: var(--r-lg); box-shadow: var(--shadow), 0 20px 40px -20px rgba(0, 0, 0, .35); }
+  .map-panel.expanded { max-height: none; }
+  .mp-grab { display: none; }
+  .mp-head:first-of-type { padding-top: 16px; }
+  .mapview.has-panel .leaflet-bottom.leaflet-right { right: 404px; }
+}
+@media (max-width: 899px) {
+  .mapview.has-panel .map-tools { display: none; }
+  .mapview.placing .map-panel { display: none; }
+  .map-panel:not(.expanded) .mp-more { display: none; }
+  .map-panel:not(.expanded):has(.mp-more)::after { content: "Swipe up for progress, notes and history"; display: block; text-align: center; font-size: 12px; color: var(--ink-3); padding: 0 16px 12px; }
+}
