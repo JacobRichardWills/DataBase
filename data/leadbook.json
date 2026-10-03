@@ -1595,17 +1595,54 @@
    "address": "5717 Como Lane, West Jordan, UT 84081",
    "referredBy": "",
    "stages": {
-    "1": "2026-10-03"
+    "1": "2026-10-03",
+    "2": "2026-10-03",
+    "3": "2026-10-03",
+    "4": "2026-10-03"
    },
    "nextFollowUp": "2026-10-04",
    "followUpNote": "",
    "archived": false,
    "createdAt": "2026-10-03T21:18:08.295Z",
-   "updatedAt": "2026-10-03T21:18:08.295Z",
-   "activities": [],
    "lat": 40.621163,
    "lng": -112.027296,
-   "geoAddr": "5717 Como Lane, West Jordan, UT 84081"
+   "geoAddr": "5717 Como Lane, West Jordan, UT 84081",
+   "updatedAt": "2026-10-03T21:18:24.627Z",
+   "_t": {
+    "stages": "2026-10-03T21:18:24.627Z"
+   },
+   "activities": [
+    {
+     "id": "musw90v8huvsi",
+     "type": "stage",
+     "stage": 2,
+     "title": "Service scheduled",
+     "date": "2026-10-03",
+     "note": "",
+     "createdAt": "2026-10-03T21:18:21.860Z",
+     "updatedAt": "2026-10-03T21:18:21.860Z"
+    },
+    {
+     "id": "musw92dvn3voz",
+     "type": "stage",
+     "stage": 3,
+     "title": "Service completed",
+     "date": "2026-10-03",
+     "note": "",
+     "createdAt": "2026-10-03T21:18:23.827Z",
+     "updatedAt": "2026-10-03T21:18:23.827Z"
+    },
+    {
+     "id": "musw9303z513w",
+     "type": "stage",
+     "stage": 4,
+     "title": "Recurring client",
+     "date": "2026-10-03",
+     "note": "",
+     "createdAt": "2026-10-03T21:18:24.627Z",
+     "updatedAt": "2026-10-03T21:18:24.627Z"
+    }
+   ]
   }
  ],
  "tasks": [
