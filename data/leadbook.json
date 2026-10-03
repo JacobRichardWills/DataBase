@@ -1582,6 +1582,30 @@
      "updatedAt": "2026-09-30T15:00:00.000Z"
     }
    ]
+  },
+  {
+   "id": "musw8qef3h9e1",
+   "name": "Yacob",
+   "business": "Fire hydrants for gays",
+   "phone": "",
+   "email": "",
+   "type": "",
+   "source": "",
+   "notes": "",
+   "address": "5717 Como Lane, West Jordan, UT 84081",
+   "referredBy": "",
+   "stages": {
+    "1": "2026-10-03"
+   },
+   "nextFollowUp": "2026-10-04",
+   "followUpNote": "",
+   "archived": false,
+   "createdAt": "2026-10-03T21:18:08.295Z",
+   "updatedAt": "2026-10-03T21:18:08.295Z",
+   "activities": [],
+   "lat": 40.621163,
+   "lng": -112.027296,
+   "geoAddr": "5717 Como Lane, West Jordan, UT 84081"
   }
  ],
  "tasks": [
